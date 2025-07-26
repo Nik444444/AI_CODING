@@ -69,10 +69,6 @@ npm run build
 
 ## 🔗 Important URLs to Get
 
-### MongoDB (Required)
-- **MongoDB Atlas**: https://cloud.mongodb.com/
-- Create free cluster, get connection string
-
 ### AI API Keys (Optional - app works with mock responses)
 - **Gemini API** (Free): https://makersuite.google.com/app/apikey
 - **OpenAI API** (Premium): https://platform.openai.com/api-keys
