@@ -271,7 +271,7 @@ backend:
     status_history:
         - working: true
           agent: "testing"
-          comment: "✅ MongoDB integration working perfectly. All CRUD operations persist data correctly using Motor async driver."
+          comment: "✅ SQLite database integration working perfectly. All CRUD operations persist data correctly using SQLAlchemy async driver."
 
   - task: "Error Handling"
     implemented: true
