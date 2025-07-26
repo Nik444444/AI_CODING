@@ -30,11 +30,7 @@ cd backend
 fly auth login
 fly launch --no-deploy
 
-# Set required environment variables
-fly secrets set MONGO_URL="your_mongodb_atlas_connection_string"
-fly secrets set DB_NAME="emergent_clone"
-
-# Optional: Add AI API keys for real responses
+# Optional: Add AI API keys for real responses (not required for demo)
 fly secrets set GEMINI_API_KEY="your_gemini_api_key"
 
 # Deploy!
