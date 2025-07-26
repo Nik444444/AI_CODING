@@ -15,13 +15,13 @@ from sqlalchemy.orm import selectinload
 from models import (
     ChatSession, ChatMessage, Project, AppTemplate, SendMessageRequest, 
     SendMessageResponse, CreateProjectRequest, UpdateProjectRequest,
-    AgentType, MessageRole, ProjectStatus
+    AgentType, MessageRole, ProjectStatus, APIKey, CreateAPIKeyRequest, UpdateAPIKeyRequest
 )
 from agents import AgentManager
 from ai_service import AIService
 from database import (
     get_db, create_tables, ChatSessionDB, ChatMessageDB, ProjectDB, AppTemplateDB,
-    serialize_json_field, deserialize_json_field
+    APIKeyDB, serialize_json_field, deserialize_json_field
 )
 
 ROOT_DIR = Path(__file__).parent
