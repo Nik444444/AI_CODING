@@ -1,5 +1,5 @@
 # Fly.io deployment configuration for Emergent Clone Backend
-app = "emergent-clone-backend"
+app = "ai-coding"
 primary_region = "ord"
 
 [build]
