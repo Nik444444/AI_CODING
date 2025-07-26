@@ -96,4 +96,36 @@ export const healthCheck = async () => {
   return response.data;
 };
 
+// API Keys API
+export const apiKeysAPI = {
+  createAPIKey: async (provider, apiKey, displayName = null) => {
+    const response = await apiClient.post('/api-keys', {
+      provider,
+      api_key: apiKey,
+      display_name: displayName
+    });
+    return response.data;
+  },
+
+  getAPIKeys: async () => {
+    const response = await apiClient.get('/api-keys');
+    return response.data;
+  },
+
+  getAPIKey: async (keyId) => {
+    const response = await apiClient.get(`/api-keys/${keyId}`);
+    return response.data;
+  },
+
+  updateAPIKey: async (keyId, updates) => {
+    const response = await apiClient.put(`/api-keys/${keyId}`, updates);
+    return response.data;
+  },
+
+  deleteAPIKey: async (keyId) => {
+    const response = await apiClient.delete(`/api-keys/${keyId}`);
+    return response.data;
+  }
+};
+
 export default apiClient;
