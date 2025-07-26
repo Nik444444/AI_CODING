@@ -37,9 +37,9 @@ primary_region = "ord"
   cpu_kind = "shared"
   cpus = 1
 
-# Environment variables (set via fly secrets)
-# MONGO_URL - MongoDB connection string
-# DB_NAME - Database name (default: emergent_clone)
+# Environment variables (no database credentials needed for SQLite)
+# SQLite database file is created automatically
+# Optional API keys for AI services:
 # GEMINI_API_KEY - Google Gemini API key (optional for demo)
 # OPENAI_API_KEY - OpenAI API key (optional)
 # ANTHROPIC_API_KEY - Anthropic API key (optional)
