@@ -16,17 +16,45 @@ class AIService:
         self.agent_manager = AgentManager()
         self.active_chats: Dict[str, LlmChat] = {}
     
-    def _get_api_key(self, provider: str) -> Optional[str]:
-        """Get API key for the specified provider"""
-        key_mapping = {
-            "gemini": "GEMINI_API_KEY",
-            "openai": "OPENAI_API_KEY", 
-            "anthropic": "ANTHROPIC_API_KEY"
-        }
+    async def _get_api_key(self, provider: str) -> Optional[str]:
+        """Get API key for the specified provider from database or environment"""
+        try:
+            # First, try to get from database
+            async with AsyncSessionLocal() as db:
+                stmt = select(APIKeyDB).where(
+                    APIKeyDB.provider == provider,
+                    APIKeyDB.is_active == 1
+                )
+                result = await db.execute(stmt)
+                api_key_db = result.scalar_one_or_none()
+                
+                if api_key_db:
+                    return api_key_db.api_key
+            
+            # Fallback to environment variables
+            key_mapping = {
+                "gemini": "GEMINI_API_KEY",
+                "openai": "OPENAI_API_KEY", 
+                "anthropic": "ANTHROPIC_API_KEY"
+            }
+            
+            env_key = key_mapping.get(provider)
+            if env_key:
+                return os.environ.get(env_key)
+                
+        except Exception as e:
+            print(f"Error getting API key for {provider}: {e}")
+            # Fallback to environment variables on database error
+            key_mapping = {
+                "gemini": "GEMINI_API_KEY",
+                "openai": "OPENAI_API_KEY", 
+                "anthropic": "ANTHROPIC_API_KEY"
+            }
+            
+            env_key = key_mapping.get(provider)
+            if env_key:
+                return os.environ.get(env_key)
         
-        env_key = key_mapping.get(provider)
-        if env_key:
-            return os.environ.get(env_key)
         return None
     
     def _create_chat_instance(self, session_id: str, agent_type: AgentType, 
