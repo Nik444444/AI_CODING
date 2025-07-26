@@ -151,7 +151,7 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
             role=MessageRole.ASSISTANT,
             content=ai_response,
             agent_type=agent_type,
-            metadata=serialize_json_field({}),
+            message_metadata=serialize_json_field({}),
             suggested_actions=serialize_json_field(suggested_actions)
         )
         db.add(assistant_message_db)
