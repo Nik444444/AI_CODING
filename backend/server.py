@@ -361,11 +361,11 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
-# Add CORS middleware
+# Add CORS middleware with production domains
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, replace with specific domains: ["https://your-site.netlify.app", "http://localhost:3000"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
