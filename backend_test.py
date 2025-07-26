@@ -742,6 +742,19 @@ class BackendTester:
         self.test_get_chat_sessions()
         self.test_agent_suggestion()
         
+        # API Key management tests
+        print("\n🔑 Testing API Key Management...")
+        self.test_create_api_key_gemini()
+        self.test_create_api_key_openai()
+        self.test_create_api_key_anthropic()
+        self.test_create_api_key_invalid_provider()
+        self.test_create_duplicate_api_key()
+        self.test_get_all_api_keys()
+        self.test_get_specific_api_key()
+        self.test_update_api_key()
+        self.test_delete_api_key()
+        self.test_get_nonexistent_api_key()
+        
         # Summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")
