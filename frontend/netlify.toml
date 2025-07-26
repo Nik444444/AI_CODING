@@ -1,7 +1,7 @@
 # Netlify deployment configuration for Emergent Clone Frontend
 [build]
   base = "frontend"
-  publish = "frontend/build"
+  publish = "build"
   command = "npm run build"
 
 # Build environment variables
