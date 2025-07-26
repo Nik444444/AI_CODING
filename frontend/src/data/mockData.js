@@ -28,7 +28,7 @@ export const mockData = {
       id: 4,
       name: "Surprise Me",
       description: "Random app idea",
-      icon: "Surprise",
+      icon: "Wand2",
       color: "bg-purple-600",
       prompt: "Generate a unique and innovative app idea based on current trends and user needs"
     }
