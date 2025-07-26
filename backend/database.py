@@ -80,6 +80,19 @@ class AppTemplateDB(Base):
     features = Column(Text, default="[]")  # JSON array as text
 
 
+class APIKeyDB(Base):
+    __tablename__ = "api_keys"
+    
+    id = Column(String, primary_key=True)
+    provider = Column(String, nullable=False)  # "gemini", "openai", "anthropic"
+    api_key = Column(Text, nullable=False)  # Store encrypted or plain text
+    display_name = Column(String, nullable=True)
+    is_active = Column(Integer, default=1)  # SQLite doesn't have boolean, use integer
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    key_metadata = Column(Text, default="{}")  # JSON as text
+
+
 # Database dependency
 async def get_db():
     async with AsyncSessionLocal() as session:
