@@ -125,7 +125,7 @@ const Dashboard = () => {
                 Music,
                 CheckSquare,
                 PenTool,
-                Surprise
+                Wand2
               }[template.icon];
 
               return (
