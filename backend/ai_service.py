@@ -2,8 +2,8 @@ import os
 import asyncio
 from typing import List, Dict, Any, Optional
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-from .models import AgentType, ChatMessage, MessageRole
-from .agents import AgentManager
+from models import AgentType, ChatMessage, MessageRole
+from agents import AgentManager
 
 
 class AIService:
