@@ -1,103 +1,77 @@
 # 🚀 Deployment Fix Guide
 
-## Current Issues Fixed:
+## ❌ Issues Found & ✅ Solutions Applied:
 
 ### 1. Fly.io Issue: "Could not find Dockerfile"
-**Solution**: Use the root-level fly.toml that points to backend/Dockerfile
+**Problem**: Docker build context was incorrect  
+**✅ Fixed**: Updated fly.toml with proper build context pointing to backend directory
 
-### 2. Netlify Issue: Package.json not found
-**Solution**: Updated netlify.toml to use frontend as base directory
+### 2. Netlify Issue: React Router version incompatibility  
+**Problem**: react-router-dom v7.5.1 requires Node.js >=20, but Netlify used Node.js 18  
+**✅ Fixed**: 
+- Downgraded react-router-dom to v6.28.0 (compatible with Node.js 18+)
+- Updated Node.js version to 20 in netlify.toml
+- Fixed publish directory path
 
-## ✅ Corrected Deployment Steps
+## ✅ Ready for Deployment
 
 ### Backend Deployment (Fly.io)
 
-From the **ROOT** directory of your project:
+From the **ROOT** directory:
 
 ```bash
-# Make sure you're in the project root (where fly.toml is located)
-cd /path/to/your/emergent-clone
-
 # Initialize and deploy
 fly auth login
 fly launch --no-deploy
 
-# Optional: Add AI API keys
+# Optional: Add AI API keys  
 fly secrets set GEMINI_API_KEY="your_gemini_api_key"
 
 # Deploy
 fly deploy
 ```
 
-**Key Points:**
-- Run commands from project root, not from backend folder
-- The fly.toml in root points to backend/Dockerfile correctly
-- No database secrets needed (SQLite is self-contained)
-
 ### Frontend Deployment (Netlify)
 
-**Option A: Git-based (Recommended)**
+**Git-based Deploy (Recommended)**:
 ```bash
-# Push to GitHub
+# Push changes to GitHub
 git add .
-git commit -m "Deploy: Emergent clone with SQLite"
+git commit -m "Fix: Updated dependencies for deployment"
 git push origin main
 
 # In Netlify Dashboard:
-# 1. New site from Git → Connect your repo
-# 2. Build settings:
-#    - Base directory: frontend
-#    - Build command: npm run build
-#    - Publish directory: frontend/build
-# 3. Environment variables:
-#    - REACT_APP_BACKEND_URL = https://your-app-name.fly.dev
-```
-
-**Option B: Manual Deploy**
-```bash
-cd frontend
-export REACT_APP_BACKEND_URL=https://your-app-name.fly.dev
-npm run build
-# Drag & drop 'build' folder to Netlify
+# Build settings auto-configured via netlify.toml:
+# - Base directory: frontend
+# - Build command: npm run build  
+# - Publish directory: frontend/build
+# - Node.js version: 20
 ```
 
 ## 🎯 Expected Results
 
-After successful deployment:
+✅ **Backend** at `https://your-app.fly.dev/api/health`:
+```json
+{
+  "status": "healthy", 
+  "services": {
+    "database": "sqlite_connected",
+    "ai_service": "active",
+    "agents": 7
+  }
+}
+```
 
-1. **Backend** at `https://your-app.fly.dev`
-   - Health: `https://your-app.fly.dev/api/health`
-   - Docs: `https://your-app.fly.dev/docs`
+✅ **Frontend** at `https://your-site.netlify.app`:
+- Modern Emergent clone interface
+- All 7 AI agents working
+- Chat, projects, templates functional
 
-2. **Frontend** at `https://your-site.netlify.app`
-   - Fully functional Emergent clone
-   - Connected to your backend API
+## 🔧 Technical Fixes Applied
 
-## 🆘 Troubleshooting
+1. **fly.toml**: Added build context to point to backend directory
+2. **package.json**: Downgraded react-router-dom from v7.5.1 → v6.28.0  
+3. **netlify.toml**: Updated Node.js from v18 → v20
+4. **Dependencies**: Verified all packages compatible
 
-### Fly.io Issues
-- ✅ Use root directory (where fly.toml is)
-- ✅ Dockerfile path is configured correctly
-- ✅ No database setup required (SQLite auto-creates)
-
-### Netlify Issues  
-- ✅ Base directory set to "frontend"
-- ✅ Build command: `npm run build`
-- ✅ Publish directory: `frontend/build`
-- ✅ Environment variable: `REACT_APP_BACKEND_URL`
-
-### Database
-- ✅ SQLite file auto-creates on first run
-- ✅ No external database setup needed
-- ✅ Data persists in container volume
-
-## 🎉 Success Checklist
-
-- [ ] Backend health check returns `{"status": "healthy"}`
-- [ ] Frontend loads without errors
-- [ ] Chat interface works
-- [ ] All 7 AI agents respond
-- [ ] Templates load correctly
-- [ ] Projects can be created
-
-Your Emergent clone is now deployed with SQLite! 🚀
+## 🚀 Your app is now deployment-ready!
