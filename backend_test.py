@@ -434,6 +434,284 @@ class BackendTester:
             self.log_test("Agent Suggestion System", False, f"Only {success_count}/3 agent suggestions worked")
             return False
     
+    def test_create_api_key_gemini(self):
+        """Test creating a Gemini API key"""
+        try:
+            api_key_data = {
+                "provider": "gemini",
+                "api_key": "AIzaSyDemoGeminiKey123456789abcdef",
+                "display_name": "My Gemini API Key"
+            }
+            
+            response = self.session.post(f"{API_BASE}/api-keys", json=api_key_data)
+            if response.status_code == 200:
+                api_key = response.json()
+                if (api_key.get('provider') == 'gemini' and 
+                    api_key.get('display_name') == api_key_data['display_name'] and
+                    api_key.get('api_key').endswith('cdef') and  # Check masking
+                    '*' in api_key.get('api_key')):  # Check masking
+                    self.test_data['gemini_key_id'] = api_key['id']
+                    self.log_test("Create Gemini API Key", True, f"Gemini API key created with ID: {api_key['id']}, masked key: {api_key['api_key']}", api_key)
+                    return True
+                else:
+                    self.log_test("Create Gemini API Key", False, f"Invalid API key response: {api_key}")
+                    return False
+            else:
+                self.log_test("Create Gemini API Key", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Create Gemini API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_create_api_key_openai(self):
+        """Test creating an OpenAI API key"""
+        try:
+            api_key_data = {
+                "provider": "openai",
+                "api_key": "sk-proj-DemoOpenAIKey123456789abcdef",
+                "display_name": "My OpenAI API Key"
+            }
+            
+            response = self.session.post(f"{API_BASE}/api-keys", json=api_key_data)
+            if response.status_code == 200:
+                api_key = response.json()
+                if (api_key.get('provider') == 'openai' and 
+                    api_key.get('display_name') == api_key_data['display_name'] and
+                    api_key.get('api_key').endswith('cdef') and  # Check masking
+                    '*' in api_key.get('api_key')):  # Check masking
+                    self.test_data['openai_key_id'] = api_key['id']
+                    self.log_test("Create OpenAI API Key", True, f"OpenAI API key created with ID: {api_key['id']}, masked key: {api_key['api_key']}", api_key)
+                    return True
+                else:
+                    self.log_test("Create OpenAI API Key", False, f"Invalid API key response: {api_key}")
+                    return False
+            else:
+                self.log_test("Create OpenAI API Key", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Create OpenAI API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_create_api_key_anthropic(self):
+        """Test creating an Anthropic API key"""
+        try:
+            api_key_data = {
+                "provider": "anthropic",
+                "api_key": "sk-ant-api03-DemoAnthropicKey123456789abcdef",
+                "display_name": "My Anthropic API Key"
+            }
+            
+            response = self.session.post(f"{API_BASE}/api-keys", json=api_key_data)
+            if response.status_code == 200:
+                api_key = response.json()
+                if (api_key.get('provider') == 'anthropic' and 
+                    api_key.get('display_name') == api_key_data['display_name'] and
+                    api_key.get('api_key').endswith('cdef') and  # Check masking
+                    '*' in api_key.get('api_key')):  # Check masking
+                    self.test_data['anthropic_key_id'] = api_key['id']
+                    self.log_test("Create Anthropic API Key", True, f"Anthropic API key created with ID: {api_key['id']}, masked key: {api_key['api_key']}", api_key)
+                    return True
+                else:
+                    self.log_test("Create Anthropic API Key", False, f"Invalid API key response: {api_key}")
+                    return False
+            else:
+                self.log_test("Create Anthropic API Key", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Create Anthropic API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_create_api_key_invalid_provider(self):
+        """Test creating API key with invalid provider"""
+        try:
+            api_key_data = {
+                "provider": "invalid_provider",
+                "api_key": "test-key-123",
+                "display_name": "Invalid Provider Key"
+            }
+            
+            response = self.session.post(f"{API_BASE}/api-keys", json=api_key_data)
+            if response.status_code == 400:
+                error_data = response.json()
+                if "Invalid provider" in error_data.get('detail', ''):
+                    self.log_test("Create API Key - Invalid Provider", True, f"Correctly rejected invalid provider: {error_data['detail']}")
+                    return True
+                else:
+                    self.log_test("Create API Key - Invalid Provider", False, f"Wrong error message: {error_data}")
+                    return False
+            else:
+                self.log_test("Create API Key - Invalid Provider", False, f"Expected HTTP 400, got {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Create API Key - Invalid Provider", False, f"Error: {str(e)}")
+            return False
+    
+    def test_create_duplicate_api_key(self):
+        """Test creating duplicate API key for same provider"""
+        try:
+            # Try to create another Gemini key
+            api_key_data = {
+                "provider": "gemini",
+                "api_key": "AIzaSyAnotherGeminiKey987654321",
+                "display_name": "Another Gemini Key"
+            }
+            
+            response = self.session.post(f"{API_BASE}/api-keys", json=api_key_data)
+            if response.status_code == 400:
+                error_data = response.json()
+                if "already exists" in error_data.get('detail', ''):
+                    self.log_test("Create Duplicate API Key", True, f"Correctly rejected duplicate provider: {error_data['detail']}")
+                    return True
+                else:
+                    self.log_test("Create Duplicate API Key", False, f"Wrong error message: {error_data}")
+                    return False
+            else:
+                self.log_test("Create Duplicate API Key", False, f"Expected HTTP 400, got {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Create Duplicate API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_get_all_api_keys(self):
+        """Test getting all API keys"""
+        try:
+            response = self.session.get(f"{API_BASE}/api-keys")
+            if response.status_code == 200:
+                api_keys = response.json()
+                if isinstance(api_keys, list) and len(api_keys) >= 3:
+                    # Check that we have our created keys
+                    providers = [key.get('provider') for key in api_keys]
+                    expected_providers = ['gemini', 'openai', 'anthropic']
+                    
+                    found_providers = [p for p in expected_providers if p in providers]
+                    if len(found_providers) >= 3:
+                        # Check masking
+                        all_masked = all('*' in key.get('api_key', '') for key in api_keys)
+                        if all_masked:
+                            self.log_test("Get All API Keys", True, f"Retrieved {len(api_keys)} API keys with proper masking: {providers}", api_keys)
+                            return True
+                        else:
+                            self.log_test("Get All API Keys", False, "API keys not properly masked")
+                            return False
+                    else:
+                        self.log_test("Get All API Keys", False, f"Missing providers. Found: {found_providers}, Expected: {expected_providers}")
+                        return False
+                else:
+                    self.log_test("Get All API Keys", False, f"Expected at least 3 API keys, got {len(api_keys) if isinstance(api_keys, list) else 'non-list'}")
+                    return False
+            else:
+                self.log_test("Get All API Keys", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Get All API Keys", False, f"Error: {str(e)}")
+            return False
+    
+    def test_get_specific_api_key(self):
+        """Test getting a specific API key"""
+        if 'gemini_key_id' not in self.test_data:
+            self.log_test("Get Specific API Key", False, "No Gemini key ID available from previous test")
+            return False
+            
+        try:
+            key_id = self.test_data['gemini_key_id']
+            response = self.session.get(f"{API_BASE}/api-keys/{key_id}")
+            if response.status_code == 200:
+                api_key = response.json()
+                if (api_key.get('id') == key_id and 
+                    api_key.get('provider') == 'gemini' and
+                    '*' in api_key.get('api_key', '')):  # Check masking
+                    self.log_test("Get Specific API Key", True, f"Retrieved API key {key_id} with proper masking", api_key)
+                    return True
+                else:
+                    self.log_test("Get Specific API Key", False, f"Invalid API key data: {api_key}")
+                    return False
+            else:
+                self.log_test("Get Specific API Key", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Get Specific API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_update_api_key(self):
+        """Test updating an API key"""
+        if 'openai_key_id' not in self.test_data:
+            self.log_test("Update API Key", False, "No OpenAI key ID available from previous test")
+            return False
+            
+        try:
+            key_id = self.test_data['openai_key_id']
+            update_data = {
+                "display_name": "Updated OpenAI Key",
+                "is_active": False
+            }
+            
+            response = self.session.put(f"{API_BASE}/api-keys/{key_id}", json=update_data)
+            if response.status_code == 200:
+                api_key = response.json()
+                if (api_key.get('display_name') == 'Updated OpenAI Key' and 
+                    api_key.get('is_active') == False):
+                    self.log_test("Update API Key", True, f"API key {key_id} updated successfully", api_key)
+                    return True
+                else:
+                    self.log_test("Update API Key", False, f"Update not reflected properly: {api_key}")
+                    return False
+            else:
+                self.log_test("Update API Key", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Update API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_delete_api_key(self):
+        """Test deleting an API key"""
+        if 'anthropic_key_id' not in self.test_data:
+            self.log_test("Delete API Key", False, "No Anthropic key ID available from previous test")
+            return False
+            
+        try:
+            key_id = self.test_data['anthropic_key_id']
+            response = self.session.delete(f"{API_BASE}/api-keys/{key_id}")
+            if response.status_code == 200:
+                result = response.json()
+                if "deleted successfully" in result.get('message', ''):
+                    # Verify key is actually deleted
+                    verify_response = self.session.get(f"{API_BASE}/api-keys/{key_id}")
+                    if verify_response.status_code == 404:
+                        self.log_test("Delete API Key", True, f"API key {key_id} deleted successfully and verified", result)
+                        return True
+                    else:
+                        self.log_test("Delete API Key", False, f"Key still exists after deletion: {verify_response.status_code}")
+                        return False
+                else:
+                    self.log_test("Delete API Key", False, f"Unexpected response: {result}")
+                    return False
+            else:
+                self.log_test("Delete API Key", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Delete API Key", False, f"Error: {str(e)}")
+            return False
+    
+    def test_get_nonexistent_api_key(self):
+        """Test getting a non-existent API key"""
+        try:
+            fake_key_id = "non-existent-key-id"
+            response = self.session.get(f"{API_BASE}/api-keys/{fake_key_id}")
+            if response.status_code == 404:
+                error_data = response.json()
+                if "not found" in error_data.get('detail', '').lower():
+                    self.log_test("Get Non-existent API Key", True, f"Correctly returned 404 for non-existent key: {error_data['detail']}")
+                    return True
+                else:
+                    self.log_test("Get Non-existent API Key", False, f"Wrong error message: {error_data}")
+                    return False
+            else:
+                self.log_test("Get Non-existent API Key", False, f"Expected HTTP 404, got {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Get Non-existent API Key", False, f"Error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Emergent Clone Backend API Tests")
