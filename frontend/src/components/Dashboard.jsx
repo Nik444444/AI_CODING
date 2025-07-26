@@ -138,7 +138,15 @@ const Dashboard = () => {
               <Github className="w-4 h-4 mr-2" />
               Connect GitHub
             </Button>
-            <Settings className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/api-keys')}
+              className="text-gray-400 hover:text-white"
+              title="Управление API ключами"
+            >
+              <Settings className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       </header>
