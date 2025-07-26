@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -17,11 +17,48 @@ import {
   MessageSquare,
   Monitor
 } from 'lucide-react';
-import { mockData } from '../data/mockData';
+import { templateAPI, projectAPI } from '../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [userPrompt, setUserPrompt] = useState('');
+  const [templates, setTemplates] = useState([]);
+  const [recentTasks, setRecentTasks] = useState([]);
+  const [deployedApps, setDeployedApps] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load templates
+      const templatesData = await templateAPI.getTemplates();
+      setTemplates(templatesData);
+      
+      // Load projects
+      const projectsData = await projectAPI.getProjects();
+      
+      // Separate into recent tasks and deployed apps
+      const tasks = projectsData.filter(p => p.status !== 'deployed');
+      const deployed = projectsData.filter(p => p.status === 'deployed');
+      
+      setRecentTasks(tasks.slice(0, 4)); // Show latest 4
+      setDeployedApps(deployed.slice(0, 3)); // Show latest 3
+      
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      // Fallback to empty arrays on error
+      setTemplates([]);
+      setRecentTasks([]);
+      setDeployedApps([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleStartChat = () => {
     if (userPrompt.trim()) {
@@ -38,6 +75,51 @@ const Dashboard = () => {
   const handleProjectClick = (project) => {
     navigate(`/project/${project.id}`);
   };
+
+  const getIconComponent = (iconName) => {
+    const icons = {
+      Music,
+      CheckSquare,
+      PenTool,
+      Wand2
+    };
+    return icons[iconName] || Monitor;
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="text-xs bg-green-900 text-green-300">Completed</Badge>;
+      case 'building':
+        return <Badge className="text-xs bg-blue-900 text-blue-300">Building</Badge>;
+      case 'deployed':
+        return <Badge className="text-xs bg-green-900 text-green-300">Live</Badge>;
+      default:
+        return <Badge className="text-xs bg-yellow-900 text-yellow-300">In Progress</Badge>;
+    }
+  };
+
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -73,7 +155,7 @@ const Dashboard = () => {
             </h2>
           </div>
 
-          {/* Credits Notice */}
+          {/* Free AI Notice */}
           <div className="mb-8">
             <div className="inline-flex items-center space-x-4 bg-gray-900 rounded-full px-6 py-3 border border-gray-700">
               <div className="flex items-center space-x-2 text-green-400">
@@ -116,17 +198,15 @@ const Dashboard = () => {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold">Quick Start Templates</h3>
-            <RefreshCw className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
+            <RefreshCw 
+              className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" 
+              onClick={loadData}
+            />
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {mockData.templates.map((template) => {
-              const IconComponent = {
-                Music,
-                CheckSquare,
-                PenTool,
-                Wand2
-              }[template.icon];
+            {templates.map((template) => {
+              const IconComponent = getIconComponent(template.icon);
 
               return (
                 <Card 
@@ -156,11 +236,14 @@ const Dashboard = () => {
                 <div className="w-5 h-5 bg-gray-700 rounded mr-3"></div>
                 Recent Tasks
               </h3>
-              <RefreshCw className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
+              <RefreshCw 
+                className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white"
+                onClick={loadData}
+              />
             </div>
             
             <div className="space-y-3">
-              {mockData.recentTasks.map((task) => (
+              {recentTasks.length > 0 ? recentTasks.map((task) => (
                 <Card 
                   key={task.id}
                   className="bg-gray-900 border-gray-700 hover:border-gray-600 cursor-pointer transition-colors"
@@ -172,24 +255,19 @@ const Dashboard = () => {
                         <h5 className="font-medium text-white mb-1">{task.name}</h5>
                         <p className="text-sm text-gray-400 mb-2">{task.description}</p>
                         <div className="flex items-center space-x-2">
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-xs ${
-                              task.status === 'completed' ? 'bg-green-900 text-green-300' :
-                              task.status === 'building' ? 'bg-blue-900 text-blue-300' :
-                              'bg-yellow-900 text-yellow-300'
-                            }`}
-                          >
-                            {task.status === 'completed' ? 'Completed' :
-                             task.status === 'building' ? 'Building' : 'In Progress'}
-                          </Badge>
-                          <span className="text-xs text-gray-500">{task.timestamp}</span>
+                          {getStatusBadge(task.status)}
+                          <span className="text-xs text-gray-500">{formatTimeAgo(task.updated_at)}</span>
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No recent tasks found</p>
+                  <p className="text-sm">Start building something amazing!</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -200,15 +278,18 @@ const Dashboard = () => {
                 <Globe className="w-5 h-5 mr-3" />
                 Deployed Apps
               </h3>
-              <RefreshCw className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
+              <RefreshCw 
+                className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white"
+                onClick={loadData}
+              />
             </div>
             
             <div className="space-y-3">
-              {mockData.deployedApps.map((app) => (
+              {deployedApps.length > 0 ? deployedApps.map((app) => (
                 <Card 
                   key={app.id}
                   className="bg-gray-900 border-gray-700 hover:border-gray-600 cursor-pointer transition-colors"
-                  onClick={() => window.open(app.url, '_blank')}
+                  onClick={() => window.open(app.deployment_url, '_blank')}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -216,20 +297,24 @@ const Dashboard = () => {
                         <h5 className="font-medium text-white mb-1">{app.name}</h5>
                         <p className="text-sm text-gray-400 mb-2">{app.description}</p>
                         <div className="flex items-center space-x-2">
-                          <Badge 
-                            variant="secondary" 
-                            className="text-xs bg-green-900 text-green-300"
-                          >
+                          <Badge className="text-xs bg-green-900 text-green-300">
                             Live
                           </Badge>
-                          <span className="text-xs text-gray-500">{app.domain}</span>
+                          <span className="text-xs text-gray-500">
+                            {app.deployment_url?.replace('https://', '')}
+                          </span>
                         </div>
                       </div>
                       <Globe className="w-5 h-5 text-gray-400" />
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No deployed apps yet</p>
+                  <p className="text-sm">Deploy your first project!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
