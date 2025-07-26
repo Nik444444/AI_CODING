@@ -273,17 +273,89 @@ backend:
           agent: "testing"
           comment: "✅ SQLite database integration working perfectly. All CRUD operations persist data correctly using SQLAlchemy async driver."
 
-  - task: "Error Handling"
+  - task: "API Key Management - Create API Key"
     implemented: true
     working: true
     file: "backend/server.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "testing"
-          comment: "Minor: Non-existent resources return HTTP 500 instead of 404, but validation errors properly return 422. Core functionality not affected."
+          comment: "✅ API key creation working perfectly for all providers (gemini, openai, anthropic). Proper validation rejects invalid providers, prevents duplicate keys per provider, and returns masked keys in responses."
+
+  - task: "API Key Management - Get All API Keys"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Get all API keys endpoint working correctly. Returns all keys with proper masking (shows only last 4 characters) and correct provider information."
+
+  - task: "API Key Management - Get Specific API Key"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Get specific API key endpoint working correctly. Returns individual key with proper masking and handles non-existent keys with 404 error."
+
+  - task: "API Key Management - Update API Key"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Update API key endpoint working perfectly. Successfully updates display_name, is_active status, and api_key fields with proper validation."
+
+  - task: "API Key Management - Delete API Key"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Delete API key endpoint working correctly. Successfully removes keys from database and returns proper confirmation message."
+
+  - task: "API Key Management - Database Integration"
+    implemented: true
+    working: true
+    file: "backend/database.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ API key database integration working perfectly. SQLite storage with proper schema, data persistence, and AI service integration for retrieving keys."
+
+  - task: "API Key Management - Validation and Security"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ API key validation and security working correctly. Provider validation (only gemini, openai, anthropic), uniqueness constraints, proper key masking, and error handling all functional."
 
 frontend:
   - task: "Frontend Testing"
