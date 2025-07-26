@@ -1,0 +1,51 @@
+# Netlify deployment configuration for Emergent Clone Frontend
+[build]
+  base = "/"
+  publish = "build"
+  command = "npm run build"
+
+# Build environment variables
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+# Redirect rules for React Router (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache service worker
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Environment-specific redirects
+[context.production]
+  environment = { REACT_APP_BACKEND_URL = "https://emergent-clone-backend.fly.dev" }
+
+[context.deploy-preview]
+  environment = { REACT_APP_BACKEND_URL = "https://emergent-clone-backend.fly.dev" }
+
+[context.branch-deploy]
+  environment = { REACT_APP_BACKEND_URL = "https://emergent-clone-backend.fly.dev" }
+
+# Development settings
+[context.development]
+  environment = { REACT_APP_BACKEND_URL = "http://localhost:8001" }

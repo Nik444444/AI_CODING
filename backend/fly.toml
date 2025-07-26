@@ -1,0 +1,43 @@
+# Fly.io deployment configuration for Emergent Clone Backend
+app = "emergent-clone-backend"
+primary_region = "ord"
+
+[build]
+
+[env]
+  PORT = "8000"
+  PYTHONPATH = "/app"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[http_service.checks]]
+  interval = "15s"
+  timeout = "2s"
+  grace_period = "5s"
+  method = "GET"
+  path = "/api/health"
+  protocol = "http"
+  tls_skip_verify = false
+
+[http_service.concurrency]
+  type = "connections"
+  hard_limit = 25
+  soft_limit = 20
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Environment variables (set via fly secrets)
+# MONGO_URL - MongoDB connection string
+# DB_NAME - Database name (default: emergent_clone)
+# GEMINI_API_KEY - Google Gemini API key (optional for demo)
+# OPENAI_API_KEY - OpenAI API key (optional)
+# ANTHROPIC_API_KEY - Anthropic API key (optional)
