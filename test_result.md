@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Comprehensive testing of Emergent clone backend API with FastAPI, MongoDB, AI Service with Gemini integration, multiple specialized AI agents, and RESTful API endpoints."
+user_problem_statement: "Comprehensive testing of Emergent clone backend API with FastAPI, SQLite, AI Service with Gemini integration, multiple specialized AI agents, and RESTful API endpoints."
 
 backend:
   - task: "Health Check Endpoint"
