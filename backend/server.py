@@ -1,6 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from pathlib import Path
 import os
@@ -8,6 +7,9 @@ import logging
 from typing import List, Optional
 from datetime import datetime
 import json
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, delete
+from sqlalchemy.orm import selectinload
 
 # Import our models and services
 from models import (
@@ -17,14 +19,13 @@ from models import (
 )
 from agents import AgentManager
 from ai_service import AIService
+from database import (
+    get_db, create_tables, ChatSessionDB, ChatMessageDB, ProjectDB, AppTemplateDB,
+    serialize_json_field, deserialize_json_field
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
 
 # Initialize services
 agent_manager = AgentManager()
@@ -47,7 +48,7 @@ DEFAULT_TEMPLATES = [
         "color": "bg-green-600",
         "category": "entertainment",
         "prompt": "Create a Spotify clone with music streaming, playlists, search functionality, and user profiles",
-        "tech_stack": ["React", "FastAPI", "MongoDB", "Audio API"],
+        "tech_stack": ["React", "FastAPI", "SQLite", "Audio API"],
         "features": ["Music playback", "Playlists", "Search", "User profiles", "Social features"]
     },
     {
@@ -58,7 +59,7 @@ DEFAULT_TEMPLATES = [
         "color": "bg-yellow-600",
         "category": "productivity",
         "prompt": "Build a task management app with project organization, deadlines, team collaboration, and progress tracking",
-        "tech_stack": ["React", "FastAPI", "MongoDB", "WebSocket"],
+        "tech_stack": ["React", "FastAPI", "SQLite", "WebSocket"],
         "features": ["Task management", "Project organization", "Team collaboration", "Progress tracking", "Notifications"]
     },
     {
@@ -69,7 +70,7 @@ DEFAULT_TEMPLATES = [
         "color": "bg-blue-600",
         "category": "productivity",
         "prompt": "Develop an AI-powered writing assistant with grammar checking, style suggestions, and content generation",
-        "tech_stack": ["React", "FastAPI", "OpenAI API", "MongoDB"],
+        "tech_stack": ["React", "FastAPI", "OpenAI API", "SQLite"],
         "features": ["Grammar checking", "Style suggestions", "Content generation", "Document management", "AI assistance"]
     },
     {
@@ -80,7 +81,7 @@ DEFAULT_TEMPLATES = [
         "color": "bg-purple-600",
         "category": "creative",
         "prompt": "Generate a unique and innovative app idea based on current trends and user needs",
-        "tech_stack": ["React", "FastAPI", "MongoDB", "AI APIs"],
+        "tech_stack": ["React", "FastAPI", "SQLite", "AI APIs"],
         "features": ["Random generation", "Trend analysis", "Innovation scoring", "Idea refinement", "Market research"]
     }
 ]
@@ -88,26 +89,30 @@ DEFAULT_TEMPLATES = [
 
 # Chat endpoints
 @api_router.post("/chat/send", response_model=SendMessageResponse)
-async def send_message(request: SendMessageRequest):
+async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(get_db)):
     """Send a message to an AI agent"""
     try:
         # Get or create session
         session_id = request.session_id
         if not session_id:
             # Create new session
-            session = ChatSession(
+            session = ChatSessionDB(
+                id=str(datetime.utcnow().timestamp()),
                 active_agent=request.agent_type or AgentType.MAIN_ASSISTANT,
                 model_provider=request.model_provider,
-                model_name=request.model_name
+                model_name=request.model_name,
+                context=serialize_json_field({})
             )
-            await db.chat_sessions.insert_one(session.dict())
+            db.add(session)
+            await db.commit()
             session_id = session.id
         else:
             # Update existing session
-            await db.chat_sessions.update_one(
-                {"id": session_id},
-                {"$set": {"updated_at": datetime.utcnow()}}
+            stmt = update(ChatSessionDB).where(ChatSessionDB.id == session_id).values(
+                updated_at=datetime.utcnow()
             )
+            await db.execute(stmt)
+            await db.commit()
         
         # Determine agent type
         agent_type = request.agent_type
@@ -116,12 +121,16 @@ async def send_message(request: SendMessageRequest):
             agent_type = ai_service.suggest_agent(request.message)
         
         # Save user message
-        user_message = ChatMessage(
+        user_message = ChatMessageDB(
+            id=f"msg_{datetime.utcnow().timestamp()}",
             session_id=session_id,
             role=MessageRole.USER,
-            content=request.message
+            content=request.message,
+            metadata=serialize_json_field({}),
+            suggested_actions=serialize_json_field([])
         )
-        await db.chat_messages.insert_one(user_message.dict())
+        db.add(user_message)
+        await db.commit()
         
         # Get AI response
         ai_response = await ai_service.send_message(
@@ -136,14 +145,28 @@ async def send_message(request: SendMessageRequest):
         suggested_actions = _generate_suggested_actions(request.message, agent_type)
         
         # Save assistant message
-        assistant_message = ChatMessage(
+        assistant_message_db = ChatMessageDB(
+            id=f"msg_{datetime.utcnow().timestamp()}_assistant",
             session_id=session_id,
             role=MessageRole.ASSISTANT,
             content=ai_response,
             agent_type=agent_type,
+            metadata=serialize_json_field({}),
+            suggested_actions=serialize_json_field(suggested_actions)
+        )
+        db.add(assistant_message_db)
+        await db.commit()
+        
+        # Convert to response model
+        assistant_message = ChatMessage(
+            id=assistant_message_db.id,
+            session_id=session_id,
+            role=MessageRole.ASSISTANT,
+            content=ai_response,
+            agent_type=agent_type,
+            timestamp=assistant_message_db.timestamp,
             suggested_actions=suggested_actions
         )
-        await db.chat_messages.insert_one(assistant_message.dict())
         
         return SendMessageResponse(
             session_id=session_id,
@@ -201,119 +224,275 @@ def _generate_suggested_actions(message: str, agent_type: AgentType) -> List[str
 
 
 @api_router.get("/chat/session/{session_id}/messages")
-async def get_session_messages(session_id: str):
+async def get_session_messages(session_id: str, db: AsyncSession = Depends(get_db)):
     """Get all messages for a chat session"""
     try:
-        messages = await db.chat_messages.find({"session_id": session_id}).sort("timestamp", 1).to_list(1000)
-        return [ChatMessage(**msg) for msg in messages]
+        stmt = select(ChatMessageDB).where(ChatMessageDB.session_id == session_id).order_by(ChatMessageDB.timestamp)
+        result = await db.execute(stmt)
+        messages_db = result.scalars().all()
+        
+        messages = []
+        for msg_db in messages_db:
+            messages.append(ChatMessage(
+                id=msg_db.id,
+                session_id=msg_db.session_id,
+                role=msg_db.role,
+                content=msg_db.content,
+                agent_type=msg_db.agent_type,
+                timestamp=msg_db.timestamp,
+                metadata=deserialize_json_field(msg_db.metadata),
+                suggested_actions=deserialize_json_field(msg_db.suggested_actions, "list")
+            ))
+        
+        return messages
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/chat/sessions")
-async def get_chat_sessions():
+async def get_chat_sessions(db: AsyncSession = Depends(get_db)):
     """Get all chat sessions"""
     try:
-        sessions = await db.chat_sessions.find().sort("updated_at", -1).to_list(100)
-        return [ChatSession(**session) for session in sessions]
+        stmt = select(ChatSessionDB).order_by(ChatSessionDB.updated_at.desc())
+        result = await db.execute(stmt)
+        sessions_db = result.scalars().all()
+        
+        sessions = []
+        for session_db in sessions_db:
+            sessions.append(ChatSession(
+                id=session_db.id,
+                title=session_db.title,
+                created_at=session_db.created_at,
+                updated_at=session_db.updated_at,
+                active_agent=session_db.active_agent,
+                model_provider=session_db.model_provider,
+                model_name=session_db.model_name,
+                context=deserialize_json_field(session_db.context)
+            ))
+        
+        return sessions
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # Project endpoints
 @api_router.post("/projects", response_model=Project)
-async def create_project(request: CreateProjectRequest):
+async def create_project(request: CreateProjectRequest, db: AsyncSession = Depends(get_db)):
     """Create a new project"""
     try:
-        project = Project(
+        project_db = ProjectDB(
+            id=f"proj_{datetime.utcnow().timestamp()}",
             name=request.name,
             description=request.description,
             template_id=request.template_id,
-            tech_stack=request.tech_stack,
-            status=ProjectStatus.PLANNING
+            tech_stack=serialize_json_field(request.tech_stack),
+            status=ProjectStatus.PLANNING,
+            metadata=serialize_json_field({})
         )
-        await db.projects.insert_one(project.dict())
+        db.add(project_db)
+        await db.commit()
+        
+        project = Project(
+            id=project_db.id,
+            name=project_db.name,
+            description=project_db.description,
+            status=project_db.status,
+            template_id=project_db.template_id,
+            created_at=project_db.created_at,
+            updated_at=project_db.updated_at,
+            progress=project_db.progress,
+            tech_stack=deserialize_json_field(project_db.tech_stack, "list"),
+            repository_url=project_db.repository_url,
+            deployment_url=project_db.deployment_url,
+            chat_session_id=project_db.chat_session_id,
+            metadata=deserialize_json_field(project_db.metadata)
+        )
+        
         return project
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/projects", response_model=List[Project])
-async def get_projects():
+async def get_projects(db: AsyncSession = Depends(get_db)):
     """Get all projects"""
     try:
-        projects = await db.projects.find().sort("updated_at", -1).to_list(100)
-        return [Project(**project) for project in projects]
+        stmt = select(ProjectDB).order_by(ProjectDB.updated_at.desc())
+        result = await db.execute(stmt)
+        projects_db = result.scalars().all()
+        
+        projects = []
+        for project_db in projects_db:
+            projects.append(Project(
+                id=project_db.id,
+                name=project_db.name,
+                description=project_db.description,
+                status=project_db.status,
+                template_id=project_db.template_id,
+                created_at=project_db.created_at,
+                updated_at=project_db.updated_at,
+                progress=project_db.progress,
+                tech_stack=deserialize_json_field(project_db.tech_stack, "list"),
+                repository_url=project_db.repository_url,
+                deployment_url=project_db.deployment_url,
+                chat_session_id=project_db.chat_session_id,
+                metadata=deserialize_json_field(project_db.metadata)
+            ))
+        
+        return projects
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/projects/{project_id}", response_model=Project)
-async def get_project(project_id: str):
+async def get_project(project_id: str, db: AsyncSession = Depends(get_db)):
     """Get a specific project"""
     try:
-        project = await db.projects.find_one({"id": project_id})
-        if not project:
+        stmt = select(ProjectDB).where(ProjectDB.id == project_id)
+        result = await db.execute(stmt)
+        project_db = result.scalar_one_or_none()
+        
+        if not project_db:
             raise HTTPException(status_code=404, detail="Project not found")
-        return Project(**project)
+        
+        project = Project(
+            id=project_db.id,
+            name=project_db.name,
+            description=project_db.description,
+            status=project_db.status,
+            template_id=project_db.template_id,
+            created_at=project_db.created_at,
+            updated_at=project_db.updated_at,
+            progress=project_db.progress,
+            tech_stack=deserialize_json_field(project_db.tech_stack, "list"),
+            repository_url=project_db.repository_url,
+            deployment_url=project_db.deployment_url,
+            chat_session_id=project_db.chat_session_id,
+            metadata=deserialize_json_field(project_db.metadata)
+        )
+        
+        return project
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.put("/projects/{project_id}", response_model=Project)
-async def update_project(project_id: str, request: UpdateProjectRequest):
+async def update_project(project_id: str, request: UpdateProjectRequest, db: AsyncSession = Depends(get_db)):
     """Update a project"""
     try:
         update_data = {k: v for k, v in request.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
         
-        result = await db.projects.update_one(
-            {"id": project_id},
-            {"$set": update_data}
-        )
+        stmt = update(ProjectDB).where(ProjectDB.id == project_id).values(**update_data)
+        result = await db.execute(stmt)
         
-        if result.matched_count == 0:
+        if result.rowcount == 0:
             raise HTTPException(status_code=404, detail="Project not found")
         
-        project = await db.projects.find_one({"id": project_id})
-        return Project(**project)
+        await db.commit()
+        
+        # Get updated project
+        stmt = select(ProjectDB).where(ProjectDB.id == project_id)
+        result = await db.execute(stmt)
+        project_db = result.scalar_one()
+        
+        project = Project(
+            id=project_db.id,
+            name=project_db.name,
+            description=project_db.description,
+            status=project_db.status,
+            template_id=project_db.template_id,
+            created_at=project_db.created_at,
+            updated_at=project_db.updated_at,
+            progress=project_db.progress,
+            tech_stack=deserialize_json_field(project_db.tech_stack, "list"),
+            repository_url=project_db.repository_url,
+            deployment_url=project_db.deployment_url,
+            chat_session_id=project_db.chat_session_id,
+            metadata=deserialize_json_field(project_db.metadata)
+        )
+        
+        return project
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # Template endpoints
 @api_router.get("/templates", response_model=List[AppTemplate])
-async def get_templates():
+async def get_templates(db: AsyncSession = Depends(get_db)):
     """Get all app templates"""
     try:
         # Check if templates exist in database
-        templates_count = await db.templates.count_documents({})
+        stmt = select(AppTemplateDB)
+        result = await db.execute(stmt)
+        templates_db = result.scalars().all()
         
-        if templates_count == 0:
+        if not templates_db:
             # Insert default templates
-            template_docs = []
             for template_data in DEFAULT_TEMPLATES:
-                template = AppTemplate(**template_data)
-                template_docs.append(template.dict())
+                template_db = AppTemplateDB(
+                    id=template_data["id"],
+                    name=template_data["name"],
+                    description=template_data["description"],
+                    icon=template_data["icon"],
+                    color=template_data["color"],
+                    category=template_data["category"],
+                    prompt=template_data["prompt"],
+                    tech_stack=serialize_json_field(template_data["tech_stack"]),
+                    features=serialize_json_field(template_data["features"])
+                )
+                db.add(template_db)
             
-            if template_docs:
-                await db.templates.insert_many(template_docs)
+            await db.commit()
+            
+            # Get templates again
+            stmt = select(AppTemplateDB)
+            result = await db.execute(stmt)
+            templates_db = result.scalars().all()
         
-        # Return templates from database
-        templates = await db.templates.find().to_list(100)
-        return [AppTemplate(**template) for template in templates]
+        templates = []
+        for template_db in templates_db:
+            templates.append(AppTemplate(
+                id=template_db.id,
+                name=template_db.name,
+                description=template_db.description,
+                icon=template_db.icon,
+                color=template_db.color,
+                category=template_db.category,
+                prompt=template_db.prompt,
+                tech_stack=deserialize_json_field(template_db.tech_stack, "list"),
+                features=deserialize_json_field(template_db.features, "list")
+            ))
+        
+        return templates
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/templates/{template_id}", response_model=AppTemplate)
-async def get_template(template_id: str):
+async def get_template(template_id: str, db: AsyncSession = Depends(get_db)):
     """Get a specific template"""
     try:
-        template = await db.templates.find_one({"id": template_id})
-        if not template:
+        stmt = select(AppTemplateDB).where(AppTemplateDB.id == template_id)
+        result = await db.execute(stmt)
+        template_db = result.scalar_one_or_none()
+        
+        if not template_db:
             raise HTTPException(status_code=404, detail="Template not found")
-        return AppTemplate(**template)
+        
+        template = AppTemplate(
+            id=template_db.id,
+            name=template_db.name,
+            description=template_db.description,
+            icon=template_db.icon,
+            color=template_db.color,
+            category=template_db.category,
+            prompt=template_db.prompt,
+            tech_stack=deserialize_json_field(template_db.tech_stack, "list"),
+            features=deserialize_json_field(template_db.features, "list")
+        )
+        
+        return template
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -351,7 +530,7 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow(),
         "services": {
-            "database": "connected",
+            "database": "sqlite_connected",
             "ai_service": "active",
             "agents": len(agent_manager.get_all_agents())
         }
@@ -378,6 +557,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# Create tables on startup
+@app.on_event("startup")
+async def startup_event():
+    await create_tables()
+    logger.info("Database tables created successfully")
+
+
 @app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+async def shutdown_event():
+    logger.info("Application shutting down")
