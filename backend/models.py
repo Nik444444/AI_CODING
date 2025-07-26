@@ -128,3 +128,27 @@ class ModelInfo(BaseModel):
     display_name: str
     is_free: bool
     description: str
+
+
+# API Key Models
+class APIKey(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    provider: str  # "gemini", "openai", "anthropic"
+    api_key: str
+    display_name: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class CreateAPIKeyRequest(BaseModel):
+    provider: str
+    api_key: str
+    display_name: Optional[str] = None
+
+
+class UpdateAPIKeyRequest(BaseModel):
+    api_key: Optional[str] = None
+    display_name: Optional[str] = None
+    is_active: Optional[bool] = None
