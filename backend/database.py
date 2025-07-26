@@ -44,7 +44,7 @@ class ChatMessageDB(Base):
     content = Column(Text, nullable=False)
     agent_type = Column(String, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
-    metadata = Column(Text, default="{}")  # JSON as text
+    message_metadata = Column(Text, default="{}")  # JSON as text
     suggested_actions = Column(Text, default="[]")  # JSON array as text
 
 
@@ -63,7 +63,7 @@ class ProjectDB(Base):
     repository_url = Column(String, nullable=True)
     deployment_url = Column(String, nullable=True)
     chat_session_id = Column(String, nullable=True)
-    metadata = Column(Text, default="{}")  # JSON as text
+    project_metadata = Column(Text, default="{}")  # JSON as text
 
 
 class AppTemplateDB(Base):
