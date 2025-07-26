@@ -3,8 +3,7 @@ app = "emergent-clone-backend"
 primary_region = "ord"
 
 [build]
-  dockerfile = "backend/Dockerfile"
-  build-target = ""
+  dockerfile = "Dockerfile"
   context = "backend"
 
 [env]
