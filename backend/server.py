@@ -10,13 +10,13 @@ from datetime import datetime
 import json
 
 # Import our models and services
-from .models import (
+from models import (
     ChatSession, ChatMessage, Project, AppTemplate, SendMessageRequest, 
     SendMessageResponse, CreateProjectRequest, UpdateProjectRequest,
     AgentType, MessageRole, ProjectStatus
 )
-from .agents import AgentManager
-from .ai_service import AIService
+from agents import AgentManager
+from ai_service import AIService
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
