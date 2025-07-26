@@ -273,6 +273,18 @@ backend:
           agent: "testing"
           comment: "✅ SQLite database integration working perfectly. All CRUD operations persist data correctly using SQLAlchemy async driver."
 
+  - task: "Error Handling"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Minor: Non-existent resources return HTTP 500 instead of 404, but validation errors properly return 422. Core functionality not affected."
+
   - task: "API Key Management - Create API Key"
     implemented: true
     working: true
