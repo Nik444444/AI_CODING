@@ -57,10 +57,10 @@ class AIService:
         
         return None
     
-    def _create_chat_instance(self, session_id: str, agent_type: AgentType, 
+    async def _create_chat_instance(self, session_id: str, agent_type: AgentType, 
                             provider: str, model: str) -> LlmChat:
         """Create a new chat instance for the session"""
-        api_key = self._get_api_key(provider)
+        api_key = await self._get_api_key(provider)
         if not api_key:
             # For demo purposes, we'll use a placeholder
             # In production, this should raise an error
