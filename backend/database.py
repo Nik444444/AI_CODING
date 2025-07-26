@@ -1,0 +1,113 @@
+from sqlalchemy import create_engine, Column, String, DateTime, Integer, Text, JSON
+from sqlalchemy.ext.declarative import declarative_base  
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from datetime import datetime
+import json
+import os
+
+# SQLite database URL
+DATABASE_URL = "sqlite+aiosqlite:///./emergent_clone.db"
+
+# Create async engine
+engine = create_async_engine(DATABASE_URL, echo=False)
+
+# Create session factory
+AsyncSessionLocal = sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
+
+# Create base class for models
+Base = declarative_base()
+
+
+# Database Models
+class ChatSessionDB(Base):
+    __tablename__ = "chat_sessions"
+    
+    id = Column(String, primary_key=True)
+    title = Column(String, default="New Chat")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    active_agent = Column(String, default="main_assistant")
+    model_provider = Column(String, default="gemini")
+    model_name = Column(String, default="gemini-2.0-flash")
+    context = Column(Text, default="{}")  # JSON as text
+
+
+class ChatMessageDB(Base):
+    __tablename__ = "chat_messages"
+    
+    id = Column(String, primary_key=True)
+    session_id = Column(String, nullable=False)
+    role = Column(String, nullable=False)  # 'user' or 'assistant'
+    content = Column(Text, nullable=False)
+    agent_type = Column(String, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    metadata = Column(Text, default="{}")  # JSON as text
+    suggested_actions = Column(Text, default="[]")  # JSON array as text
+
+
+class ProjectDB(Base):
+    __tablename__ = "projects"
+    
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String, default="planning")
+    template_id = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    progress = Column(Integer, default=0)
+    tech_stack = Column(Text, default="[]")  # JSON array as text
+    repository_url = Column(String, nullable=True)
+    deployment_url = Column(String, nullable=True)
+    chat_session_id = Column(String, nullable=True)
+    metadata = Column(Text, default="{}")  # JSON as text
+
+
+class AppTemplateDB(Base):
+    __tablename__ = "app_templates"
+    
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    icon = Column(String, nullable=False)
+    color = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    prompt = Column(Text, nullable=False)
+    tech_stack = Column(Text, default="[]")  # JSON array as text
+    features = Column(Text, default="[]")  # JSON array as text
+
+
+# Database dependency
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
+# Create tables
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+# Helper functions for JSON serialization
+def serialize_json_field(value):
+    """Convert Python object to JSON string"""
+    if isinstance(value, (dict, list)):
+        return json.dumps(value)
+    return value or ("{}" if isinstance(value, dict) else "[]")
+
+
+def deserialize_json_field(value, default_type="dict"):
+    """Convert JSON string to Python object"""
+    if not value:
+        return {} if default_type == "dict" else []
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return {} if default_type == "dict" else []
