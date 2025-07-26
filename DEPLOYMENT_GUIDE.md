@@ -121,7 +121,7 @@ After successful deployment, you'll have:
 3. **Full Functionality**
    - All features work identically to original Emergent
    - Real AI responses (with API keys) or smart mock responses
-   - Database persistence
+   - SQLite database with automatic persistence
    - Production-ready performance
 
 ## 🆘 NEED HELP?
