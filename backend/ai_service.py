@@ -4,6 +4,9 @@ from typing import List, Dict, Any, Optional
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from models import AgentType, ChatMessage, MessageRole
 from agents import AgentManager
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from database import APIKeyDB, AsyncSessionLocal
 
 
 class AIService:
