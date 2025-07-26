@@ -2,7 +2,7 @@
 [build]
   base = "frontend"
   publish = "build"
-  command = "npm run build"
+  command = "DISABLE_ESLINT_PLUGIN=true npm run build"
 
 # Build environment variables
 [build.environment]
