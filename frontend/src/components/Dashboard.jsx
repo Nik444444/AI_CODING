@@ -9,7 +9,7 @@ import {
   Music, 
   CheckSquare, 
   PenTool, 
-  Surprise,
+  Wand2,
   Github,
   Settings,
   RefreshCw,
