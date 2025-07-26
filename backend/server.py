@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 import logging
+import uuid
 from typing import List, Optional
 from datetime import datetime
 import json
