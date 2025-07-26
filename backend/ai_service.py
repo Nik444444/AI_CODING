@@ -93,7 +93,7 @@ class AIService:
         chat_key = f"{session_id}_{agent_type}_{provider}_{model}"
         
         if chat_key not in self.active_chats:
-            self.active_chats[chat_key] = self._create_chat_instance(
+            self.active_chats[chat_key] = await self._create_chat_instance(
                 session_id, agent_type, provider, model
             )
         
@@ -104,7 +104,7 @@ class AIService:
         
         try:
             # For demo purposes, return a mock response if no API key
-            api_key = self._get_api_key(provider)
+            api_key = await self._get_api_key(provider)
             if not api_key or api_key == "demo-key":
                 return await self._get_mock_response(message, agent_type)
             
