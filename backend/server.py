@@ -126,7 +126,7 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
             session_id=session_id,
             role=MessageRole.USER,
             content=request.message,
-            metadata=serialize_json_field({}),
+            message_metadata=serialize_json_field({}),
             suggested_actions=serialize_json_field([])
         )
         db.add(user_message)
