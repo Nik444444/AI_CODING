@@ -518,6 +518,188 @@ async def get_models():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# API Key endpoints
+@api_router.post("/api-keys", response_model=APIKey)
+async def create_api_key(request: CreateAPIKeyRequest, db: AsyncSession = Depends(get_db)):
+    """Create a new API key"""
+    try:
+        # Validate provider
+        valid_providers = ["gemini", "openai", "anthropic"]
+        if request.provider not in valid_providers:
+            raise HTTPException(status_code=400, detail=f"Invalid provider. Must be one of: {valid_providers}")
+        
+        # Check if provider already has a key
+        stmt = select(APIKeyDB).where(APIKeyDB.provider == request.provider)
+        result = await db.execute(stmt)
+        existing_key = result.scalar_one_or_none()
+        
+        if existing_key:
+            raise HTTPException(status_code=400, detail=f"API key for {request.provider} already exists. Use PUT to update.")
+        
+        api_key_db = APIKeyDB(
+            id=str(uuid.uuid4()),
+            provider=request.provider,
+            api_key=request.api_key,
+            display_name=request.display_name or f"{request.provider.title()} API Key",
+            is_active=1,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            key_metadata=serialize_json_field({})
+        )
+        
+        db.add(api_key_db)
+        await db.commit()
+        await db.refresh(api_key_db)
+        
+        # Convert to response model (mask the key)
+        api_key = APIKey(
+            id=api_key_db.id,
+            provider=api_key_db.provider,
+            api_key="*" * 20 + api_key_db.api_key[-4:] if len(api_key_db.api_key) > 4 else "*" * len(api_key_db.api_key),
+            display_name=api_key_db.display_name,
+            is_active=bool(api_key_db.is_active),
+            created_at=api_key_db.created_at,
+            updated_at=api_key_db.updated_at,
+            metadata=deserialize_json_field(api_key_db.key_metadata)
+        )
+        
+        return api_key
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/api-keys", response_model=List[APIKey])
+async def get_api_keys(db: AsyncSession = Depends(get_db)):
+    """Get all API keys (with masked keys)"""
+    try:
+        stmt = select(APIKeyDB).order_by(APIKeyDB.created_at.desc())
+        result = await db.execute(stmt)
+        api_keys_db = result.scalars().all()
+        
+        # Convert to response models (mask the keys)
+        api_keys = []
+        for key_db in api_keys_db:
+            api_key = APIKey(
+                id=key_db.id,
+                provider=key_db.provider,
+                api_key="*" * 20 + key_db.api_key[-4:] if len(key_db.api_key) > 4 else "*" * len(key_db.api_key),
+                display_name=key_db.display_name,
+                is_active=bool(key_db.is_active),
+                created_at=key_db.created_at,
+                updated_at=key_db.updated_at,
+                metadata=deserialize_json_field(key_db.key_metadata)
+            )
+            api_keys.append(api_key)
+        
+        return api_keys
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/api-keys/{key_id}", response_model=APIKey)
+async def get_api_key(key_id: str, db: AsyncSession = Depends(get_db)):
+    """Get a specific API key (with masked key)"""
+    try:
+        stmt = select(APIKeyDB).where(APIKeyDB.id == key_id)
+        result = await db.execute(stmt)
+        key_db = result.scalar_one_or_none()
+        
+        if not key_db:
+            raise HTTPException(status_code=404, detail="API key not found")
+        
+        # Convert to response model (mask the key)
+        api_key = APIKey(
+            id=key_db.id,
+            provider=key_db.provider,
+            api_key="*" * 20 + key_db.api_key[-4:] if len(key_db.api_key) > 4 else "*" * len(key_db.api_key),
+            display_name=key_db.display_name,
+            is_active=bool(key_db.is_active),
+            created_at=key_db.created_at,
+            updated_at=key_db.updated_at,
+            metadata=deserialize_json_field(key_db.key_metadata)
+        )
+        
+        return api_key
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/api-keys/{key_id}", response_model=APIKey)
+async def update_api_key(key_id: str, request: UpdateAPIKeyRequest, db: AsyncSession = Depends(get_db)):
+    """Update an API key"""
+    try:
+        stmt = select(APIKeyDB).where(APIKeyDB.id == key_id)
+        result = await db.execute(stmt)
+        key_db = result.scalar_one_or_none()
+        
+        if not key_db:
+            raise HTTPException(status_code=404, detail="API key not found")
+        
+        # Update fields
+        update_data = {}
+        if request.api_key is not None:
+            update_data["api_key"] = request.api_key
+        if request.display_name is not None:
+            update_data["display_name"] = request.display_name
+        if request.is_active is not None:
+            update_data["is_active"] = int(request.is_active)
+        
+        if update_data:
+            update_data["updated_at"] = datetime.utcnow()
+            stmt = update(APIKeyDB).where(APIKeyDB.id == key_id).values(**update_data)
+            await db.execute(stmt)
+            await db.commit()
+            
+            # Refresh the object
+            stmt = select(APIKeyDB).where(APIKeyDB.id == key_id)
+            result = await db.execute(stmt)
+            key_db = result.scalar_one()
+        
+        # Convert to response model (mask the key)
+        api_key = APIKey(
+            id=key_db.id,
+            provider=key_db.provider,
+            api_key="*" * 20 + key_db.api_key[-4:] if len(key_db.api_key) > 4 else "*" * len(key_db.api_key),
+            display_name=key_db.display_name,
+            is_active=bool(key_db.is_active),
+            created_at=key_db.created_at,
+            updated_at=key_db.updated_at,
+            metadata=deserialize_json_field(key_db.key_metadata)
+        )
+        
+        return api_key
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/api-keys/{key_id}")
+async def delete_api_key(key_id: str, db: AsyncSession = Depends(get_db)):
+    """Delete an API key"""
+    try:
+        stmt = select(APIKeyDB).where(APIKeyDB.id == key_id)
+        result = await db.execute(stmt)
+        key_db = result.scalar_one_or_none()
+        
+        if not key_db:
+            raise HTTPException(status_code=404, detail="API key not found")
+        
+        stmt = delete(APIKeyDB).where(APIKeyDB.id == key_id)
+        await db.execute(stmt)
+        await db.commit()
+        
+        return {"message": f"API key for {key_db.provider} deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Health check
 @api_router.get("/")
 async def root():
