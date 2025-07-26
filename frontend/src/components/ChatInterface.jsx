@@ -20,7 +20,7 @@ import {
   Globe,
   TestTube
 } from 'lucide-react';
-import { mockData } from '../data/mockData';
+import { chatAPI, agentAPI } from '../services/api';
 
 const ChatInterface = () => {
   const location = useLocation();
@@ -28,39 +28,71 @@ const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
+  const [selectedProvider, setSelectedProvider] = useState('gemini');
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [availableModels, setAvailableModels] = useState([]);
+  const [availableAgents, setAvailableAgents] = useState([]);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // Initialize with template or initial prompt
-    const { template, initialPrompt } = location.state || {};
-    
-    if (template) {
-      const welcomeMessage = {
-        id: 1,
-        type: 'assistant',
-        content: `Great choice! Let's build a ${template.name}. ${template.description}\n\nI'll help you create this step by step. What specific features would you like to include?`,
-        timestamp: new Date().toLocaleTimeString(),
-        agent: 'Project Planner'
-      };
-      setMessages([welcomeMessage]);
-    } else if (initialPrompt) {
-      setInputValue(initialPrompt);
-    } else {
-      const welcomeMessage = {
-        id: 1,
-        type: 'assistant',
-        content: `Hi! I'm your AI development assistant. I can help you build full-stack applications, analyze websites, create components, and much more.\n\nWhat would you like to build today?`,
-        timestamp: new Date().toLocaleTimeString(),
-        agent: 'Main Assistant'
-      };
-      setMessages([welcomeMessage]);
-    }
-  }, [location.state]);
+    loadInitialData();
+    initializeChat();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const loadInitialData = async () => {
+    try {
+      // Load available models and agents
+      const [modelsData, agentsData] = await Promise.all([
+        agentAPI.getModels(),
+        agentAPI.getAgents()
+      ]);
+      
+      setAvailableModels(modelsData);
+      setAvailableAgents(agentsData);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    }
+  };
+
+  const initializeChat = () => {
+    const { template, initialPrompt } = location.state || {};
+    
+    if (template) {
+      const welcomeMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `Great choice! Let's build a ${template.name}. ${template.description}\n\nI'll help you create this step by step. What specific features would you like to include?`,
+        timestamp: new Date().toLocaleTimeString(),
+        agent_type: 'project_planner',
+        suggested_actions: [
+          "Show me the tech stack",
+          "Create project structure",
+          "Start with frontend",
+          "Plan the database"
+        ]
+      };
+      setMessages([welcomeMessage]);
+      setSelectedAgent('project_planner');
+    } else if (initialPrompt) {
+      setInputValue(initialPrompt);
+    } else {
+      const welcomeMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `Hi! I'm your AI development assistant. I can help you build full-stack applications, analyze websites, create components, and much more.\n\nWhat would you like to build today?`,
+        timestamp: new Date().toLocaleTimeString(),
+        agent_type: 'main_assistant'
+      };
+      setMessages([welcomeMessage]);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,33 +102,62 @@ const ChatInterface = () => {
     if (!inputValue.trim() || isLoading) return;
 
     const userMessage = {
-      id: messages.length + 1,
-      type: 'user',
+      id: `msg-${Date.now()}`,
+      role: 'user',
       content: inputValue,
       timestamp: new Date().toLocaleTimeString()
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = inputValue;
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = mockData.aiResponses;
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      
+    try {
+      const response = await chatAPI.sendMessage(
+        sessionId,
+        messageToSend,
+        selectedAgent,
+        selectedProvider,
+        selectedModel
+      );
+
+      // Set session ID if it's new
+      if (!sessionId) {
+        setSessionId(response.session_id);
+      }
+
       const assistantMessage = {
-        id: messages.length + 2,
-        type: 'assistant',
-        content: randomResponse.content,
-        timestamp: new Date().toLocaleTimeString(),
-        agent: randomResponse.agent,
-        actions: randomResponse.actions
+        id: response.message.id,
+        role: 'assistant',
+        content: response.message.content,
+        timestamp: new Date(response.message.timestamp).toLocaleTimeString(),
+        agent_type: response.message.agent_type,
+        suggested_actions: response.suggested_actions || []
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Update selected agent if it changed
+      if (response.message.agent_type && response.message.agent_type !== selectedAgent) {
+        setSelectedAgent(response.message.agent_type);
+      }
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Show error message
+      const errorMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: 'Sorry, I encountered an error processing your message. Please try again.',
+        timestamp: new Date().toLocaleTimeString(),
+        agent_type: 'main_assistant'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -106,26 +167,37 @@ const ChatInterface = () => {
     }
   };
 
-  const getAgentIcon = (agent) => {
-    const icons = {
-      'Main Assistant': Bot,
-      'Project Planner': Brain,
-      'Frontend Developer': Palette,
-      'Backend Developer': Database,
-      'Full-Stack Developer': Code,
-      'Deployment Engineer': Globe,
-      'Testing Expert': TestTube
-    };
-    return icons[agent] || Bot;
+  const handleSuggestedAction = (action) => {
+    setInputValue(action);
   };
 
-  const getModelInfo = (model) => {
-    const models = {
-      'gemini-2.0-flash': { name: 'Gemini 2.0 Flash', provider: 'Google', free: true },
-      'gpt-4o': { name: 'GPT-4o', provider: 'OpenAI', free: false },
-      'grok-beta': { name: 'Grok Beta', provider: 'xAI', free: false }
+  const handleModelChange = (value) => {
+    const [provider, model] = value.split('/');
+    setSelectedProvider(provider);
+    setSelectedModel(model);
+  };
+
+  const getAgentIcon = (agentType) => {
+    const icons = {
+      'main_assistant': Bot,
+      'project_planner': Brain,
+      'frontend_developer': Palette,
+      'backend_developer': Database,
+      'fullstack_developer': Code,
+      'deployment_engineer': Globe,
+      'testing_expert': TestTube
     };
-    return models[model];
+    return icons[agentType] || Bot;
+  };
+
+  const getAgentName = (agentType) => {
+    const agent = availableAgents.find(a => a.type === agentType);
+    return agent ? agent.name : 'AI Assistant';
+  };
+
+  const getModelDisplayName = (provider, model) => {
+    const modelInfo = availableModels.find(m => m.provider === provider && m.name === model);
+    return modelInfo ? modelInfo.display_name : `${provider}/${model}`;
   };
 
   return (
@@ -148,29 +220,30 @@ const ChatInterface = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <Select value={`${selectedProvider}/${selectedModel}`} onValueChange={handleModelChange}>
               <SelectTrigger className="w-48 bg-gray-900 border-gray-700">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-gray-900 border-gray-700">
-                <SelectItem value="gemini-2.0-flash" className="text-white">
-                  <div className="flex items-center">
-                    <Sparkles className="w-4 h-4 mr-2 text-green-400" />
-                    Gemini 2.0 Flash (Free)
-                  </div>
-                </SelectItem>
-                <SelectItem value="gpt-4o" className="text-white">
-                  <div className="flex items-center">
-                    <Zap className="w-4 h-4 mr-2 text-blue-400" />
-                    GPT-4o (Premium)
-                  </div>
-                </SelectItem>
-                <SelectItem value="grok-beta" className="text-white">
-                  <div className="flex items-center">
-                    <Brain className="w-4 h-4 mr-2 text-purple-400" />
-                    Grok Beta (Premium)
-                  </div>
-                </SelectItem>
+                {availableModels.map((model) => (
+                  <SelectItem 
+                    key={`${model.provider}/${model.name}`} 
+                    value={`${model.provider}/${model.name}`}
+                    className="text-white"
+                  >
+                    <div className="flex items-center">
+                      {model.provider === 'gemini' && <Sparkles className="w-4 h-4 mr-2 text-green-400" />}
+                      {model.provider === 'openai' && <Zap className="w-4 h-4 mr-2 text-blue-400" />}
+                      {model.provider === 'anthropic' && <Brain className="w-4 h-4 mr-2 text-purple-400" />}
+                      <span>{model.display_name}</span>
+                      {model.is_free && (
+                        <Badge variant="secondary" className="ml-2 text-xs bg-green-900 text-green-300">
+                          Free
+                        </Badge>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Settings className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
@@ -182,14 +255,14 @@ const ChatInterface = () => {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           {messages.map((message) => {
-            const AgentIcon = message.agent ? getAgentIcon(message.agent) : User;
+            const AgentIcon = message.agent_type ? getAgentIcon(message.agent_type) : User;
             
             return (
-              <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`flex max-w-4xl ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`flex-shrink-0 ${message.type === 'user' ? 'ml-4' : 'mr-4'}`}>
+              <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex max-w-4xl ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex-shrink-0 ${message.role === 'user' ? 'ml-4' : 'mr-4'}`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      message.type === 'user' ? 'bg-cyan-600' : 'bg-gray-700'
+                      message.role === 'user' ? 'bg-cyan-600' : 'bg-gray-700'
                     }`}>
                       <AgentIcon className="w-5 h-5 text-white" />
                     </div>
@@ -197,15 +270,15 @@ const ChatInterface = () => {
                   
                   <div className="flex-1">
                     <Card className={`${
-                      message.type === 'user' 
+                      message.role === 'user' 
                         ? 'bg-cyan-900 border-cyan-700' 
                         : 'bg-gray-900 border-gray-700'
                     }`}>
                       <CardContent className="p-4">
-                        {message.agent && (
+                        {message.agent_type && message.role === 'assistant' && (
                           <div className="flex items-center mb-2">
                             <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
-                              {message.agent}
+                              {getAgentName(message.agent_type)}
                             </Badge>
                             <span className="text-xs text-gray-500 ml-2">{message.timestamp}</span>
                           </div>
@@ -216,15 +289,15 @@ const ChatInterface = () => {
                           </p>
                         </div>
                         
-                        {message.actions && (
+                        {message.suggested_actions && message.suggested_actions.length > 0 && (
                           <div className="mt-4 flex flex-wrap gap-2">
-                            {message.actions.map((action, idx) => (
+                            {message.suggested_actions.map((action, idx) => (
                               <Button 
                                 key={idx}
                                 variant="outline" 
                                 size="sm"
                                 className="bg-gray-800 border-gray-600 hover:bg-gray-700"
-                                onClick={() => setInputValue(action)}
+                                onClick={() => handleSuggestedAction(action)}
                               >
                                 {action}
                               </Button>
@@ -292,8 +365,8 @@ const ChatInterface = () => {
           
           <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
             <div>
-              Model: <span className="text-cyan-400">{getModelInfo(selectedModel)?.name}</span>
-              {getModelInfo(selectedModel)?.free && (
+              Model: <span className="text-cyan-400">{getModelDisplayName(selectedProvider, selectedModel)}</span>
+              {availableModels.find(m => m.provider === selectedProvider && m.name === selectedModel)?.is_free && (
                 <Badge variant="secondary" className="ml-2 text-xs bg-green-900 text-green-300">
                   Free
                 </Badge>
