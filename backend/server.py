@@ -240,7 +240,7 @@ async def get_session_messages(session_id: str, db: AsyncSession = Depends(get_d
                 content=msg_db.content,
                 agent_type=msg_db.agent_type,
                 timestamp=msg_db.timestamp,
-                metadata=deserialize_json_field(msg_db.metadata),
+                metadata=deserialize_json_field(msg_db.message_metadata),
                 suggested_actions=deserialize_json_field(msg_db.suggested_actions, "list")
             ))
         
