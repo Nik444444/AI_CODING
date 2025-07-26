@@ -80,16 +80,12 @@ npm run build
 ## ✅ DEPLOYMENT CHECKLIST
 
 ### Before Deployment
-- [ ] MongoDB Atlas cluster created
-- [ ] Connection string obtained
 - [ ] Fly.io CLI installed
 - [ ] Netlify account created
 - [ ] Code pushed to GitHub (for git-based deploy)
 
 ### Backend Deployment (Fly.io)
 - [ ] `fly launch` completed
-- [ ] `MONGO_URL` secret set
-- [ ] `DB_NAME` secret set
 - [ ] API keys added (optional)
 - [ ] `fly deploy` successful
 - [ ] Health check passing: `https://your-app.fly.dev/api/health`
