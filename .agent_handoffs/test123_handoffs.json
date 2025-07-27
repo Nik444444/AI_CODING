@@ -1,0 +1,14 @@
+[
+  {
+    "from_agent": "project_planner",
+    "to_agent": "design_agent",
+    "session_id": "test123",
+    "timestamp": "2025-07-27T16:36:13.561069",
+    "context": {
+      "project_path": "projects/project_test123",
+      "requirements": "создай простое приложение для управления задачами",
+      "tech_spec_file": "projects/project_test123/tech_spec.md"
+    },
+    "message": "Планирование завершено. Передаю проект для создания UI/UX дизайна."
+  }
+]
