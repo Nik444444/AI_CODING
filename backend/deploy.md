@@ -63,10 +63,11 @@ fly open /api/health
 
 4. **Health Checks**: The app includes health checks at `/api/health`
 
-5. **Scaling**: The current configuration uses minimal resources. Scale up as needed:
+5. **Scaling**: The current configuration uses 1GB memory. Scale up/down as needed:
    ```bash
-   fly scale memory 512
-   fly scale count 2
+   fly scale memory 512   # Scale down to 512MB
+   fly scale memory 2048  # Scale up to 2GB
+   fly scale count 2      # Scale to 2 instances
    ```
 
 ## Troubleshooting
