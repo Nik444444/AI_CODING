@@ -38,13 +38,13 @@
 
 # Environment-specific redirects
 [context.production]
-  environment = { REACT_APP_BACKEND_URL = "https://emergent-clone-backend.fly.dev" }
+  environment = { REACT_APP_BACKEND_URL = "https://ai-coding.fly.dev" }
 
 [context.deploy-preview]
-  environment = { REACT_APP_BACKEND_URL = "https://emergent-clone-backend.fly.dev" }
+  environment = { REACT_APP_BACKEND_URL = "https://ai-coding.fly.dev" }
 
 [context.branch-deploy]
-  environment = { REACT_APP_BACKEND_URL = "https://emergent-clone-backend.fly.dev" }
+  environment = { REACT_APP_BACKEND_URL = "https://ai-coding.fly.dev" }
 
 # Development settings
 [context.development]
