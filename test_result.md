@@ -596,13 +596,12 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "Emergent Tools Integration - Command Execution"
-    - "Emergent Tools Integration - API Integrations"
+    - "Chat System - Send Message"
+    - "Agent Suggestion System"
   stuck_tasks: 
-    - "Emergent Tools Integration - Command Execution"
-    - "Emergent Tools Integration - API Integrations"
+    - "Chat System - Send Message"
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 agent_communication:
     - agent: "testing"
