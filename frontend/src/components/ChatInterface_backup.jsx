@@ -422,170 +422,128 @@ ${error.message || 'Неизвестная ошибка'}
           </div>
         </header>
 
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-6 space-y-6">
-            {messages.map((message) => {
-              const AgentIcon = message.agent_type ? getAgentIcon(message.agent_type) : User;
-              
-              return (
-                <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex max-w-4xl ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`flex-shrink-0 ${message.role === 'user' ? 'ml-4' : 'mr-4'}`}>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
-                        message.role === 'user' 
-                          ? 'bg-gradient-to-br from-cyan-500 to-blue-600' 
-                          : 'bg-gradient-to-br from-gray-600 to-gray-700'
-                      }`}>
-                        <AgentIcon className="w-5 h-5 text-white" />
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <Card className={`shadow-lg transition-all duration-200 hover:shadow-xl ${
-                        message.role === 'user' 
-                          ? 'bg-gradient-to-br from-cyan-900/50 to-blue-900/30 border-cyan-700/50' 
-                          : 'bg-gray-900/80 border-gray-700/50 backdrop-blur supports-[backdrop-filter]:bg-gray-900/60'
-                      }`}>
-                        <CardContent className="p-6">
-                          {message.agent_type && message.role === 'assistant' && (
-                            <div className="flex items-center justify-between mb-4">
-                              <Badge variant="outline" className="border-cyan-500/30 text-cyan-400 bg-cyan-500/10">
-                                {getAgentName(message.agent_type)}
-                              </Badge>
-                              <span className="text-xs text-gray-500">{message.timestamp}</span>
-                            </div>
-                          )}
-                          
-                          <MessageFormatter content={message.content} />
-                          
-                          {/* File Preview */}
-                          {message.created_files && message.created_files.length > 0 && (
-                            <div className="mt-6">
-                              <FilePreview files={message.created_files} />
-                            </div>
-                          )}
-                          
-                          {message.suggested_actions && message.suggested_actions.length > 0 && (
-                            <div className="mt-6 flex flex-wrap gap-2">
-                              {message.suggested_actions.map((action, idx) => (
-                                <Button 
-                                  key={idx}
-                                  variant="outline" 
-                                  size="sm"
-                                  className="bg-gray-800/50 border-gray-600 hover:bg-gray-700 hover:border-gray-500 transition-all duration-200"
-                                  onClick={() => handleSuggestedAction(action)}
-                                >
-                                  {action}
-                                </Button>
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto p-6 space-y-6">
+          {messages.map((message) => {
+            const AgentIcon = message.agent_type ? getAgentIcon(message.agent_type) : User;
+            
+            return (
+              <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex max-w-4xl ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex-shrink-0 ${message.role === 'user' ? 'ml-4' : 'mr-4'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      message.role === 'user' ? 'bg-cyan-600' : 'bg-gray-700'
+                    }`}>
+                      <AgentIcon className="w-5 h-5 text-white" />
                     </div>
                   </div>
+                  
+                  <div className="flex-1">
+                    <Card className={`${
+                      message.role === 'user' 
+                        ? 'bg-cyan-900 border-cyan-700' 
+                        : 'bg-gray-900 border-gray-700'
+                    }`}>
+                      <CardContent className="p-4">
+                        {message.agent_type && message.role === 'assistant' && (
+                          <div className="flex items-center mb-2">
+                            <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
+                              {getAgentName(message.agent_type)}
+                            </Badge>
+                            <span className="text-xs text-gray-500 ml-2">{message.timestamp}</span>
+                          </div>
+                        )}
+                        <div className="prose prose-invert max-w-none">
+                          <p className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                            {message.content}
+                          </p>
+                        </div>
+                        
+                        {message.suggested_actions && message.suggested_actions.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {message.suggested_actions.map((action, idx) => (
+                              <Button 
+                                key={idx}
+                                variant="outline" 
+                                size="sm"
+                                className="bg-gray-800 border-gray-600 hover:bg-gray-700"
+                                onClick={() => handleSuggestedAction(action)}
+                              >
+                                {action}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              );
-            })}
-            
-            {isLoading && (
-              <TypingIndicator agentName={getAgentName(selectedAgent)} />
-            )}
-            
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-gray-800 p-4 flex-shrink-0 bg-gray-950/80 backdrop-blur supports-[backdrop-filter]:bg-gray-950/60">
-          <div className="max-w-4xl mx-auto">
-            {/* Uploaded Files Preview */}
-            {uploadedFiles.length > 0 && (
-              <div className="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
-                <div className="flex flex-wrap gap-2">
-                  {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center space-x-2 bg-gray-800 rounded px-3 py-1">
-                      <FileText className="w-4 h-4 text-cyan-400" />
-                      <span className="text-sm text-gray-300">{file.name}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeUploadedFile(index)}
-                        className="h-5 w-5 p-0 hover:bg-red-600/20"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
+              </div>
+            );
+          })}
+          
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="flex max-w-4xl">
+                <div className="flex-shrink-0 mr-4">
+                  <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-white animate-pulse" />
+                  </div>
+                </div>
+                <Card className="bg-gray-900 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
+                      <span className="text-gray-400 text-sm">AI is thinking...</span>
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
+                </Card>
               </div>
-            )}
-            
-            <div className="flex items-end space-x-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <textarea
-                    ref={textareaRef}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Расскажите, что хотите создать или спросите что-то..."
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 resize-none transition-all duration-200 min-h-[52px] max-h-[200px]"
-                    rows="1"
-                    disabled={isLoading}
-                  />
-                  
-                  {/* File Upload Button */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute right-2 bottom-2 h-8 w-8 p-0 hover:bg-gray-700"
-                    disabled={isLoading}
-                    title="Прикрепить файл"
-                  >
-                    <Paperclip className="w-4 h-4" />
-                  </Button>
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    accept=".txt,.md,.js,.jsx,.ts,.tsx,.py,.html,.css,.json,image/*"
-                  />
-                </div>
-              </div>
-              
-              <Button 
-                onClick={handleSendMessage}
-                disabled={isLoading || (!inputValue.trim() && uploadedFiles.length === 0)}
-                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                size="lg"
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
             </div>
-            
-            <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-              <div className="flex items-center space-x-4">
-                <span>
-                  Модель: <span className="text-cyan-400 font-medium">{getModelDisplayName(selectedProvider, selectedModel)}</span>
-                  {availableModels.find(m => m.provider === selectedProvider && m.name === selectedModel)?.is_free && (
-                    <Badge variant="secondary" className="ml-2 text-xs bg-green-900 text-green-300">
-                      Бесплатно
-                    </Badge>
-                  )}
-                </span>
-              </div>
-              <div>Enter для отправки, Shift+Enter для новой строки</div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Input Area */}
+      <div className="border-t border-gray-800 p-4 flex-shrink-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end space-x-4">
+            <div className="flex-1">
+              <textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Describe what you want to build or ask a question..."
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+                rows="3"
+              />
             </div>
+            <Button 
+              onClick={handleSendMessage}
+              disabled={isLoading || !inputValue.trim()}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+            <div>
+              Model: <span className="text-cyan-400">{getModelDisplayName(selectedProvider, selectedModel)}</span>
+              {availableModels.find(m => m.provider === selectedProvider && m.name === selectedModel)?.is_free && (
+                <Badge variant="secondary" className="ml-2 text-xs bg-green-900 text-green-300">
+                  Free
+                </Badge>
+              )}
+            </div>
+            <div>Press Enter to send, Shift+Enter for new line</div>
           </div>
         </div>
       </div>
