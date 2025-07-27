@@ -88,35 +88,61 @@ class AIService:
         agent_type: AgentType = AgentType.MAIN_ASSISTANT,
         provider: str = "gemini",
         model: str = "gemini-2.0-flash"
-    ) -> str:
-        """Send a message to the AI agent and get response"""
-        
-        # Get or create chat instance for this session
-        chat_key = f"{session_id}_{agent_type}_{provider}_{model}"
-        
-        if chat_key not in self.active_chats:
-            self.active_chats[chat_key] = await self._create_chat_instance(
-                session_id, agent_type, provider, model
-            )
-        
-        chat = self.active_chats[chat_key]
-        
-        # Create user message
-        user_message = UserMessage(text=message)
+    ) -> Dict[str, Any]:
+        """Execute real agent task instead of just returning text"""
         
         try:
-            # For demo purposes, return a mock response if no API key
-            api_key = await self._get_api_key(provider)
-            if not api_key or api_key == "demo-key":
-                return await self._get_mock_response(message, agent_type)
+            # Выполнить реальную задачу агента
+            result = await self.real_executor.execute_agent_task(
+                agent_type=agent_type,
+                message=message,
+                session_id=session_id,
+                context={}
+            )
             
-            # Send message to AI
-            response = await chat.send_message(user_message)
-            return response
-            
+            if result["success"]:
+                response_text = result["response"]
+                
+                # Добавить информацию о созданных файлах
+                if result.get("created_files"):
+                    files_info = "\n\n📁 **Созданные файлы:**\n"
+                    for file_path in result["created_files"]:
+                        files_info += f"- `{file_path}`\n"
+                    response_text += files_info
+                
+                # Добавить информацию о следующем агенте
+                if result.get("next_agent"):
+                    response_text += f"\n\n🔄 **Следующий этап:** {result['next_agent']}"
+                
+                return {
+                    "response": response_text,
+                    "agent_type": result["agent_type"],
+                    "created_files": result.get("created_files", []),
+                    "next_agent": result.get("next_agent"),
+                    "success": True
+                }
+            else:
+                # Fallback to mock response if agent execution fails
+                return {
+                    "response": await self._get_mock_response(message, agent_type),
+                    "agent_type": agent_type.value,
+                    "created_files": [],
+                    "next_agent": None,
+                    "success": False,
+                    "error": result.get("error")
+                }
+                
         except Exception as e:
+            print(f"Error executing agent {agent_type}: {e}")
             # Fallback to mock response on error
-            return await self._get_mock_response(message, agent_type)
+            return {
+                "response": await self._get_mock_response(message, agent_type),
+                "agent_type": agent_type.value,
+                "created_files": [],
+                "next_agent": None,
+                "success": False,
+                "error": str(e)
+            }
     
     async def _get_mock_response(self, message: str, agent_type: AgentType) -> str:
         """Generate mock responses for demo purposes"""
