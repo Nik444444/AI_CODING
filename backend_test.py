@@ -746,11 +746,11 @@ class BackendTester:
             self.log_test("Emergent Tools - Web Analysis", False, f"Error: {str(e)}")
             return False
     
-    def test_emergent_tools_web_search(self):
-        """Test web search functionality - найди информацию о Python FastAPI"""
+    def test_emergent_tools_web_search_python_tutorials(self):
+        """Test web search - найди Python tutorials (specific test from review)"""
         try:
             message_data = {
-                "message": "найди информацию о Python FastAPI",
+                "message": "найди Python tutorials",
                 "agent_type": "main_assistant", 
                 "model_provider": "gemini",
                 "model_name": "gemini-2.0-flash"
@@ -763,21 +763,55 @@ class BackendTester:
                 
                 # Check if response contains search results
                 if (any(indicator in message_content.lower() for indicator in 
-                       ['результаты поиска', 'fastapi', 'python', 'поиск']) and
+                       ['результаты поиска', 'python', 'tutorial', 'поиск']) and
                     ('http' in message_content or 'www' in message_content)):
-                    self.log_test("Emergent Tools - Web Search", True, 
-                                f"Web search working - found FastAPI information", chat_response)
+                    self.log_test("Emergent Tools - Web Search (Python tutorials)", True, 
+                                f"Web search working - found Python tutorial information", chat_response)
                     return True
                 else:
-                    self.log_test("Emergent Tools - Web Search", False, 
+                    self.log_test("Emergent Tools - Web Search (Python tutorials)", False, 
                                 f"Web search response doesn't contain expected results: {message_content[:200]}")
                     return False
             else:
-                self.log_test("Emergent Tools - Web Search", False, 
+                self.log_test("Emergent Tools - Web Search (Python tutorials)", False, 
                             f"HTTP {response.status_code}: {response.text}")
                 return False
         except Exception as e:
-            self.log_test("Emergent Tools - Web Search", False, f"Error: {str(e)}")
+            self.log_test("Emergent Tools - Web Search (Python tutorials)", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_web_analysis_httpbin(self):
+        """Test web analysis - анализ https://httpbin.org/json (specific test from review)"""
+        try:
+            message_data = {
+                "message": "анализ https://httpbin.org/json",
+                "agent_type": "main_assistant",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if response contains web analysis indicators
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['анализ веб-сайтов', 'httpbin.org', 'сайт:', 'заголовок:', 'контент']) and
+                    'https://httpbin.org/json' in message_content):
+                    self.log_test("Emergent Tools - Web Analysis (httpbin)", True, 
+                                f"Web analysis working - analyzed httpbin.org/json successfully", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Web Analysis (httpbin)", False, 
+                                f"Web analysis response doesn't contain expected content: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Web Analysis (httpbin)", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Web Analysis (httpbin)", False, f"Error: {str(e)}")
             return False
     
     def test_emergent_tools_file_creation_react(self):
