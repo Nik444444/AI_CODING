@@ -45,7 +45,11 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [availableModels, setAvailableModels] = useState([]);
   const [availableAgents, setAvailableAgents] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     loadInitialData();
