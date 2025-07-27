@@ -78,6 +78,6 @@ fly open /api/health
 
 ## Post-Deployment
 After successful deployment, your backend will be available at:
-`https://emergent-clone-backend.fly.dev`
+`https://ai-coding.fly.dev`
 
 Make note of this URL - you'll need it for frontend deployment.
