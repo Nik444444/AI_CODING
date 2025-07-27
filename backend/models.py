@@ -183,6 +183,12 @@ class AgentInfo(BaseModel):
     specialization: str
     system_prompt: str
     capabilities: List[str]
+    status: AgentStatus = AgentStatus.IDLE
+    current_task: Optional[str] = None
+    estimated_availability: Optional[datetime] = None
+    typical_handoff_agents: List[AgentType] = Field(default_factory=list)
+    typical_duration: Optional[int] = None  # typical task duration in minutes
+    collaboration_preferences: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ModelInfo(BaseModel):
