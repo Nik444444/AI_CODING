@@ -465,6 +465,130 @@ ${error.message || 'Неизвестная ошибка'}
                           
                           <MessageFormatter content={message.content} />
                           
+                          {/* Search Results */}
+                          {message.search_results && message.search_results.length > 0 && (
+                            <div className="mt-6">
+                              <h4 className="text-sm font-semibold text-cyan-400 mb-3">🔍 Результаты поиска</h4>
+                              <div className="space-y-3">
+                                {message.search_results.slice(0, 5).map((result, idx) => (
+                                  <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                                    <h5 className="font-medium text-white mb-1">
+                                      <a href={result.url} target="_blank" rel="noopener noreferrer" 
+                                         className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                                        {result.title}
+                                      </a>
+                                    </h5>
+                                    <p className="text-xs text-gray-400 mb-2">{result.url}</p>
+                                    <p className="text-sm text-gray-300">{result.snippet}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Generated Images */}
+                          {message.generated_images && message.generated_images.length > 0 && (
+                            <div className="mt-6">
+                              <h4 className="text-sm font-semibold text-cyan-400 mb-3">🎨 Созданные изображения</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {message.generated_images.map((imageUrl, idx) => (
+                                  <div key={idx} className="bg-gray-800/50 rounded-lg overflow-hidden border border-gray-700">
+                                    <img 
+                                      src={imageUrl} 
+                                      alt={`Generated image ${idx + 1}`}
+                                      className="w-full h-auto max-h-64 object-cover"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Command Output */}
+                          {message.command_output && (
+                            <div className="mt-6">
+                              <h4 className="text-sm font-semibold text-cyan-400 mb-3">💻 Вывод команды</h4>
+                              <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                                <div className="text-xs text-gray-400 mb-2">
+                                  $ {message.command_output.command}
+                                </div>
+                                <pre className="text-sm text-gray-300 whitespace-pre-wrap">
+                                  {message.command_output.stdout}
+                                  {message.command_output.stderr && (
+                                    <span className="text-red-400">{message.command_output.stderr}</span>
+                                  )}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Tool Results (Web Analysis) */}
+                          {message.tool_results && message.tool_results.length > 0 && (
+                            <div className="mt-6">
+                              <h4 className="text-sm font-semibold text-cyan-400 mb-3">🌐 Анализ веб-сайтов</h4>
+                              <div className="space-y-4">
+                                {message.tool_results.map((result, idx) => (
+                                  <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                                    <h5 className="font-medium text-white mb-2">
+                                      <a href={result.url} target="_blank" rel="noopener noreferrer" 
+                                         className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                                        {result.title || result.url}
+                                      </a>
+                                    </h5>
+                                    <div className="text-sm text-gray-300 max-h-32 overflow-y-auto">
+                                      {result.content.substring(0, 500)}
+                                      {result.content.length > 500 && '...'}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Integration Playbook */}
+                          {message.integration_playbook && (
+                            <div className="mt-6">
+                              <h4 className="text-sm font-semibold text-cyan-400 mb-3">🔧 Playbook интеграции</h4>
+                              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                                <h5 className="font-medium text-white mb-3">{message.integration_playbook.title}</h5>
+                                
+                                <div className="mb-4">
+                                  <h6 className="text-sm font-semibold text-gray-300 mb-2">Шаги:</h6>
+                                  <ul className="text-sm text-gray-300 space-y-1">
+                                    {message.integration_playbook.steps?.map((step, idx) => (
+                                      <li key={idx} className="flex items-start">
+                                        <span className="text-cyan-400 mr-2">•</span>
+                                        {step}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                
+                                {message.integration_playbook.code_example && (
+                                  <div className="mb-4">
+                                    <h6 className="text-sm font-semibold text-gray-300 mb-2">Пример кода:</h6>
+                                    <pre className="bg-gray-900 rounded p-3 text-xs text-gray-300 overflow-x-auto">
+                                      {message.integration_playbook.code_example}
+                                    </pre>
+                                  </div>
+                                )}
+                                
+                                {message.integration_playbook.required_keys && (
+                                  <div>
+                                    <h6 className="text-sm font-semibold text-gray-300 mb-2">Требуемые ключи:</h6>
+                                    <div className="flex flex-wrap gap-2">
+                                      {message.integration_playbook.required_keys.map((key, idx) => (
+                                        <Badge key={idx} variant="outline" className="text-xs">
+                                          {key}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
                           {/* File Preview */}
                           {message.created_files && message.created_files.length > 0 && (
                             <div className="mt-6">
