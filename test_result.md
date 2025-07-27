@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Добавить возможность автоматически добавлять API ключи LLM и чтобы они сохранялись. Создать отдельную страницу для управления API ключами с поддержкой провайдеров Gemini, OpenAI, Anthropic."
+user_problem_statement: "Создать идеальную копию app.emergent.sh/chat - AI ассистент который работает один в один как Claude, с анализом веб-сайтов, созданием файлов, предпросмотрами приложений и всеми современными функциями AI ассистента. Реализовать Gemini API интеграцию для тестирования."
 
 backend:
   - task: "API Key Model and Database"
