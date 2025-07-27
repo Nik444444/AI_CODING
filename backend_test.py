@@ -712,6 +712,244 @@ class BackendTester:
             self.log_test("Get Non-existent API Key", False, f"Error: {str(e)}")
             return False
     
+    def test_emergent_tools_web_analysis(self):
+        """Test web analysis functionality - проанализируй сайт https://example.com"""
+        try:
+            message_data = {
+                "message": "проанализируй сайт https://example.com",
+                "agent_type": "main_assistant",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if response contains web analysis indicators
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['анализ веб-сайтов', 'example.com', 'сайт:', 'заголовок:', 'контент']) and
+                    'https://example.com' in message_content):
+                    self.log_test("Emergent Tools - Web Analysis", True, 
+                                f"Web analysis working - analyzed example.com successfully", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Web Analysis", False, 
+                                f"Web analysis response doesn't contain expected content: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Web Analysis", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Web Analysis", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_web_search(self):
+        """Test web search functionality - найди информацию о Python FastAPI"""
+        try:
+            message_data = {
+                "message": "найди информацию о Python FastAPI",
+                "agent_type": "main_assistant", 
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if response contains search results
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['результаты поиска', 'fastapi', 'python', 'поиск']) and
+                    ('http' in message_content or 'www' in message_content)):
+                    self.log_test("Emergent Tools - Web Search", True, 
+                                f"Web search working - found FastAPI information", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Web Search", False, 
+                                f"Web search response doesn't contain expected results: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Web Search", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Web Search", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_file_creation_react(self):
+        """Test React file creation - создай файл React компонента"""
+        try:
+            message_data = {
+                "message": "создай файл React компонента",
+                "agent_type": "frontend_developer",
+                "model_provider": "gemini", 
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if file was created and response contains React code
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['файл создан', 'react', 'jsx', 'component']) and
+                    ('import React' in message_content or 'export default' in message_content)):
+                    self.log_test("Emergent Tools - React File Creation", True, 
+                                f"React file creation working - created component file", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - React File Creation", False, 
+                                f"React file creation response doesn't contain expected content: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - React File Creation", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - React File Creation", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_file_creation_python(self):
+        """Test Python file creation - создай Python файл"""
+        try:
+            message_data = {
+                "message": "создай Python файл",
+                "agent_type": "backend_developer",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if Python file was created
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['файл создан', 'python', '.py']) and
+                    ('def main' in message_content or 'print(' in message_content or '__name__' in message_content)):
+                    self.log_test("Emergent Tools - Python File Creation", True, 
+                                f"Python file creation working - created script file", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Python File Creation", False, 
+                                f"Python file creation response doesn't contain expected content: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Python File Creation", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Python File Creation", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_command_execution(self):
+        """Test command execution - выполни команду pwd"""
+        try:
+            message_data = {
+                "message": "выполни команду pwd",
+                "agent_type": "main_assistant",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if command was executed
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['выполнена команда', 'pwd', '$ pwd']) and
+                    ('/app' in message_content or '/home' in message_content or '/usr' in message_content)):
+                    self.log_test("Emergent Tools - Command Execution", True, 
+                                f"Command execution working - pwd command executed", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Command Execution", False, 
+                                f"Command execution response doesn't contain expected output: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Command Execution", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Command Execution", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_integration_playbook(self):
+        """Test integration playbook - интеграция Stripe"""
+        try:
+            message_data = {
+                "message": "интеграция Stripe",
+                "agent_type": "main_assistant",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if integration playbook was generated
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['playbook', 'stripe', 'интеграция', 'шаги']) and
+                    ('pip install stripe' in message_content or 'stripe.api_key' in message_content)):
+                    self.log_test("Emergent Tools - Integration Playbook", True, 
+                                f"Integration playbook working - generated Stripe integration guide", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Integration Playbook", False, 
+                                f"Integration playbook response doesn't contain expected content: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Integration Playbook", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Integration Playbook", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_image_generation(self):
+        """Test image generation - создай изображение"""
+        try:
+            message_data = {
+                "message": "создай изображение",
+                "agent_type": "main_assistant",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if image generation response was provided
+                if (any(indicator in message_content.lower() for indicator in 
+                       ['изображение создано', 'картинку', 'изображение']) and
+                    ('base64' in message_content.lower() or 'отображено' in message_content.lower())):
+                    self.log_test("Emergent Tools - Image Generation", True, 
+                                f"Image generation working - generated placeholder image", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Image Generation", False, 
+                                f"Image generation response doesn't contain expected content: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Image Generation", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Image Generation", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Emergent Clone Backend API Tests")
@@ -754,6 +992,16 @@ class BackendTester:
         self.test_update_api_key()
         self.test_delete_api_key()
         self.test_get_nonexistent_api_key()
+        
+        # Emergent Tools Integration Tests
+        print("\n🛠️ Testing Emergent Tools Integration...")
+        self.test_emergent_tools_web_analysis()
+        self.test_emergent_tools_web_search()
+        self.test_emergent_tools_file_creation_react()
+        self.test_emergent_tools_file_creation_python()
+        self.test_emergent_tools_command_execution()
+        self.test_emergent_tools_integration_playbook()
+        self.test_emergent_tools_image_generation()
         
         # Summary
         print("\n" + "=" * 60)
