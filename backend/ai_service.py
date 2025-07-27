@@ -12,11 +12,12 @@ from database import APIKeyDB, AsyncSessionLocal
 
 
 class AIService:
-    """Service for handling AI interactions with real agent execution"""
+    """Service for handling AI interactions with real agent execution and tools"""
     
     def __init__(self):
         self.agent_manager = AgentManager()
         self.real_executor = RealAgentExecutor()
+        self.tools_manager = AgentToolsManager()
         self.active_chats: Dict[str, LlmChat] = {}
     
     async def _get_api_key(self, provider: str) -> Optional[str]:
