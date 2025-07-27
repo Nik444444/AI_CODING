@@ -413,11 +413,11 @@ backend:
 
   - task: "Emergent Tools Integration - API Integrations"
     implemented: true
-    working: false
+    working: true
     file: "backend/agent_tools.py, backend/ai_service.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
@@ -425,6 +425,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ Integration playbooks FAILING - Request 'интеграция с OpenAI API' is being routed to project creation workflow instead of integration playbook tool. Tool logic exists and works when called directly (generates proper OpenAI playbook with steps, code examples, API keys), but routing fails in production API. Same issue as command execution."
+        - working: true
+          agent: "testing"
+          comment: "✅ FIXED! Integration playbooks now working correctly. Tested 'интеграция с OpenAI API' - generates proper OpenAI integration playbook with steps, code examples, and required API keys instead of routing to project creation. The async context manager fix in ai_service.py resolved the routing issue."
     implemented: true
     working: true
     file: "backend/ai_service.py, backend/server.py"
