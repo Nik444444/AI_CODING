@@ -18,7 +18,7 @@ from models import (
     SendMessageResponse, CreateProjectRequest, UpdateProjectRequest,
     AgentType, MessageRole, ProjectStatus, APIKey, CreateAPIKeyRequest, UpdateAPIKeyRequest
 )
-from agents import AgentManager
+from agents import AgentManager, AgentCollaborationManager
 from ai_service import AIService
 from database import (
     get_db, create_tables, ChatSessionDB, ChatMessageDB, ProjectDB, AppTemplateDB,
