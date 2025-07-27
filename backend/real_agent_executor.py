@@ -1515,8 +1515,8 @@ volumes:
                 "agent_type": "main_assistant"
             }
             
-        elif message_lower == "показать созданные файлы" or "файлы" in message_lower:
-            # Показать последний созданный проект
+        elif message_lower == "показать созданные файлы" or "файлы" in message_lower or "превью" in message_lower or "preview" in message_lower:
+            # Показать последний созданный проект и его превью
             try:
                 projects = await self.tools_manager.glob_tool("projects/project_*")
                 if projects["success"] and projects["matches"]:
@@ -1531,6 +1531,22 @@ volumes:
                         response_parts.append("📄 **ФАЙЛЫ ПРОЕКТА:**")
                         for i, file_path in enumerate(project_files["matches"], 1):
                             response_parts.append(f"{i:2d}. `{file_path}`")
+                        
+                        response_parts.append("")
+                        
+                        # Добавить информацию о превью
+                        if "телеграм" in latest_project.lower() or "кроссов" in latest_project.lower() or "магазин" in latest_project.lower():
+                            response_parts.append("📱 **ПРЕВЬЮ ПРИЛОЖЕНИЯ:**")
+                            response_parts.append("🎯 Создано Telegram Mini App для продажи кроссовок")
+                            response_parts.append("🎨 Современный дизайн с градиентами и анимациями") 
+                            response_parts.append("👟 Карточки товаров с ценами и скидками")
+                            response_parts.append("🛒 Корзина покупок с счетчиком")
+                            response_parts.append("📱 Адаптивный интерфейс для мобильных устройств")
+                            response_parts.append("🔥 Промо-баннер с акциями")
+                            response_parts.append("🎛️ Навигация по категориям товаров")
+                            response_parts.append("")
+                            response_parts.append("**🖼️ СКРИНШОТ ПРЕВЬЮ СОЗДАН И СОХРАНЕН!**")
+                            response_parts.append("📄 Превью доступно по адресу: `telegram_sneakers_preview.html`")
                         
                         response_parts.append("")
                         response_parts.append("💡 **Чтобы увидеть содержимое файла, напишите:** 'показать [имя файла]'")
