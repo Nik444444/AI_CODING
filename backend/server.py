@@ -704,17 +704,15 @@ async def delete_api_key(key_id: str, db: AsyncSession = Depends(get_db)):
 # Agent Collaboration endpoints
 @api_router.post("/collaboration/create")
 async def create_collaboration(
-    project_id: str,
-    session_id: str,
-    user_request: str,
+    request: dict,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new agent collaboration session"""
     try:
         collaboration = collaboration_manager.create_collaboration(
-            project_id=project_id,
-            session_id=session_id,
-            user_request=user_request
+            project_id=request["project_id"],
+            session_id=request["session_id"],
+            user_request=request["user_request"]
         )
         
         return {
