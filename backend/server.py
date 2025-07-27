@@ -30,6 +30,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # Initialize services
 agent_manager = AgentManager()
+collaboration_manager = AgentCollaborationManager()
 ai_service = AIService()
 
 # Create the main app
