@@ -140,11 +140,17 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
             agent_type=agent_type
         )
         
-        # Extract response text
+        # Extract response text and tool results
         ai_response = ai_response_data.get("response", "Ошибка выполнения агента")
         actual_agent_type = ai_response_data.get("agent_type", agent_type.value)
         created_files = ai_response_data.get("created_files", [])
         next_agent = ai_response_data.get("next_agent")
+        tool_results = ai_response_data.get("tool_results", [])
+        search_results = ai_response_data.get("search_results", [])
+        generated_images = ai_response_data.get("generated_images", [])
+        command_output = ai_response_data.get("command_output")
+        integration_playbook = ai_response_data.get("integration_playbook")
+        file_content = ai_response_data.get("file_content")
         
         # Generate suggested actions based on context and agent response
         suggested_actions = _generate_suggested_actions(request.message, agent_type, ai_response_data)
