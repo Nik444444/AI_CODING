@@ -590,11 +590,11 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "API Keys Manager Page"
-    - "API Keys Service Integration"
+    - "Emergent Tools Integration - Command Execution"
+    - "Emergent Tools Integration - API Integrations"
   stuck_tasks: 
-    - "API Keys Manager Page"
-    - "API Keys Service Integration"
+    - "Emergent Tools Integration - Command Execution"
+    - "Emergent Tools Integration - API Integrations"
   test_all: false
   test_priority: "stuck_first"
 
