@@ -701,6 +701,178 @@ async def delete_api_key(key_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Agent Collaboration endpoints
+@api_router.post("/collaboration/create")
+async def create_collaboration(
+    project_id: str,
+    session_id: str,
+    user_request: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new agent collaboration session"""
+    try:
+        collaboration = collaboration_manager.create_collaboration(
+            project_id=project_id,
+            session_id=session_id,
+            user_request=user_request
+        )
+        
+        return {
+            "collaboration_id": collaboration.id,
+            "project_id": collaboration.project_id,
+            "session_id": collaboration.session_id,
+            "current_phase": collaboration.current_phase,
+            "active_agents": collaboration.active_agents,
+            "initial_task": collaboration.agent_tasks[0] if collaboration.agent_tasks else None
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/collaboration/{session_id}/status")
+async def get_collaboration_status(session_id: str):
+    """Get detailed status of collaboration session"""
+    try:
+        status = collaboration_manager.get_collaboration_status(session_id)
+        if "error" in status:
+            raise HTTPException(status_code=404, detail=status["error"])
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/collaboration/{session_id}/tasks")
+async def get_collaboration_tasks(session_id: str):
+    """Get all tasks for a collaboration session"""
+    try:
+        tasks = collaboration_manager.get_active_tasks(session_id)
+        return {
+            "session_id": session_id,
+            "active_tasks": len(tasks),
+            "tasks": [
+                {
+                    "id": task.id,
+                    "agent_type": task.agent_type,
+                    "title": task.title,
+                    "description": task.description,
+                    "status": task.status,
+                    "priority": task.priority,
+                    "created_at": task.created_at,
+                    "started_at": task.started_at,
+                    "estimated_duration": task.estimated_duration,
+                    "deliverables": task.deliverables,
+                    "handoff_to": task.handoff_to
+                }
+                for task in tasks
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/collaboration/task/{task_id}/update")
+async def update_task_status(
+    task_id: str,
+    status: str,
+    message: Optional[str] = None
+):
+    """Update task status"""
+    try:
+        from models import AgentStatus
+        
+        # Convert string to AgentStatus enum
+        try:
+            agent_status = AgentStatus(status)
+        except ValueError:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid status: {status}. Valid statuses: {[s.value for s in AgentStatus]}"
+            )
+        
+        success = collaboration_manager.update_task_status(
+            task_id=task_id,
+            status=agent_status,
+            message=message or ""
+        )
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        return {"success": True, "task_id": task_id, "new_status": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/collaboration/handoff")
+async def create_handoff(
+    from_agent: str,
+    to_agent: str,
+    collaboration_id: str,
+    message: str,
+    context: Optional[dict] = None
+):
+    """Create a handoff task from one agent to another"""
+    try:
+        from models import AgentType
+        
+        # Convert strings to AgentType enums
+        try:
+            from_agent_type = AgentType(from_agent)
+            to_agent_type = AgentType(to_agent)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid agent type: {e}")
+        
+        task = collaboration_manager.create_handoff_task(
+            from_agent=from_agent_type,
+            to_agent=to_agent_type,
+            collaboration_id=collaboration_id,
+            message=message,
+            context=context or {}
+        )
+        
+        return {
+            "handoff_created": True,
+            "task_id": task.id,
+            "from_agent": from_agent,
+            "to_agent": to_agent,
+            "task_title": task.title
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/collaboration/{session_id}/agents")
+async def get_collaboration_agents(session_id: str):
+    """Get information about active agents in collaboration"""
+    try:
+        collaboration = collaboration_manager.get_collaboration(session_id)
+        if not collaboration:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+        
+        agents_info = []
+        for agent_type in collaboration.active_agents:
+            agent_info = agent_manager.get_agent(agent_type)
+            if agent_info:
+                agents_info.append({
+                    "type": agent_info.type,
+                    "name": agent_info.name,
+                    "description": agent_info.description,
+                    "specialization": agent_info.specialization,
+                    "status": agent_info.status,
+                    "current_task": agent_info.current_task,
+                    "typical_handoff_agents": agent_info.typical_handoff_agents,
+                    "typical_duration": agent_info.typical_duration
+                })
+        
+        return {
+            "session_id": session_id,
+            "active_agents": agents_info,
+            "total_agents": len(agents_info)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Health check
 @api_router.get("/")
 async def root():
