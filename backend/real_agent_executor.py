@@ -1278,107 +1278,195 @@ volumes:
     
     # Реализация остальных агентов...
     async def _execute_main_assistant(self, message: str, session_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Main Assistant - координация и делегирование задач к специализированным агентам"""
+        """Main Assistant - выполняет ПОЛНЫЙ workflow разработки автоматически как главный AI"""
         
         response_parts = []
-        created_files = []
-        next_agent = None
+        all_created_files = []
         
-        # Анализ сообщения для определения подходящего агента
+        # Анализ сообщения для определения типа проекта
         message_lower = message.lower()
         
-        # Определяем тип задачи и подходящего агента
-        if any(word in message_lower for word in ["создай", "создать", "разработай", "построй", "приложение", "сайт", "веб", "app", "проект"]):
-            # Задача создания проекта - передаем Project Planner
-            result = await self._execute_project_planner(message, session_id, context)
-            next_agent = "project_planner"
+        if any(word in message_lower for word in ["создай", "создать", "разработай", "построй", "приложение", "сайт", "веб", "app", "проект", "мини", "телеграм"]):
             
-            response_parts.append("🧠 **Main Assistant анализирует запрос...**")
-            response_parts.append(f"Определил задачу: создание проекта")
-            response_parts.append(f"Передаю задачу Project Planner агенту для планирования и архитектуры")
+            response_parts.append("🚀 **MAIN ASSISTANT НАЧИНАЕТ ПОЛНУЮ РАЗРАБОТКУ ПРОЕКТА**")
+            response_parts.append(f"📝 Анализирую запрос: '{message}'")
+            response_parts.append("⚡ Запускаю автоматический workflow разработки...")
             response_parts.append("")
-            response_parts.append("=" * 50)
-            response_parts.append("🎯 **PROJECT PLANNER ПРИСТУПАЕТ К РАБОТЕ:**")
-            response_parts.append("=" * 50)
+            response_parts.append("=" * 70)
+            
+            # ЭТАП 1: PROJECT PLANNER
+            response_parts.append("🧠 **ЭТАП 1/5: PROJECT PLANNER РАБОТАЕТ...**")
+            response_parts.append("▶️ Планирование архитектуры и создание структуры проекта...")
+            
+            try:
+                result1 = await self._execute_project_planner(message, session_id, context)
+                if result1["success"]:
+                    response_parts.append("✅ **PROJECT PLANNER ЗАВЕРШИЛ РАБОТУ**")
+                    response_parts.append(f"📁 Создано файлов: {len(result1.get('created_files', []))}")
+                    all_created_files.extend(result1.get('created_files', []))
+                    project_path = result1.get('created_files', [''])[0].split('/')[0:2] if result1.get('created_files') else []
+                    if project_path:
+                        context['project_path'] = '/'.join(project_path)
+                else:
+                    response_parts.append("❌ **PROJECT PLANNER ОШИБКА**")
+                    return {"success": False, "response": "\n".join(response_parts), "created_files": [], "next_agent": None, "agent_type": "main_assistant"}
+            except Exception as e:
+                response_parts.append(f"❌ **ОШИБКА PROJECT PLANNER:** {str(e)}")
+                return {"success": False, "response": "\n".join(response_parts), "created_files": [], "next_agent": None, "agent_type": "main_assistant"}
+            
             response_parts.append("")
-            response_parts.append(result["response"])
+            response_parts.append("=" * 70)
             
-            created_files = result.get("created_files", [])
-            if result.get("next_agent"):
-                next_agent = result["next_agent"]
+            # ЭТАП 2: DESIGN AGENT
+            response_parts.append("🎨 **ЭТАП 2/5: DESIGN AGENT РАБОТАЕТ...**")
+            response_parts.append("▶️ Создание UI/UX дизайна и компонентов...")
             
-        elif any(word in message_lower for word in ["дизайн", "ui", "ux", "интерфейс", "макет", "design"]):
-            # Задача дизайна - передаем Design Agent
-            result = await self._execute_design_agent(message, session_id, context)
-            next_agent = "design_agent"
+            try:
+                result2 = await self._execute_design_agent("Создай дизайн для " + message, session_id, context)
+                if result2["success"]:
+                    response_parts.append("✅ **DESIGN AGENT ЗАВЕРШИЛ РАБОТУ**")
+                    response_parts.append(f"🎨 Создано файлов дизайна: {len(result2.get('created_files', []))}")
+                    all_created_files.extend(result2.get('created_files', []))
+                    context.update(result2.get('context', {}))
+                else:
+                    response_parts.append("❌ **DESIGN AGENT ОШИБКА**")
+            except Exception as e:
+                response_parts.append(f"❌ **ОШИБКА DESIGN AGENT:** {str(e)}")
             
-            response_parts.append("🧠 **Main Assistant определил задачу дизайна**")
-            response_parts.append("Передаю Design Agent для создания UI/UX...")
             response_parts.append("")
-            response_parts.append(result["response"])
-            created_files = result.get("created_files", [])
+            response_parts.append("=" * 70)
             
-        elif any(word in message_lower for word in ["frontend", "react", "компонент", "интерфейс"]):
-            # Frontend задача
-            result = await self._execute_frontend_developer(message, session_id, context)
-            next_agent = "frontend_developer"
+            # ЭТАП 3: FRONTEND DEVELOPER
+            response_parts.append("⚛️ **ЭТАП 3/5: FRONTEND DEVELOPER РАБОТАЕТ...**")
+            response_parts.append("▶️ Создание React приложения и компонентов...")
             
-            response_parts.append("🧠 **Main Assistant определил frontend задачу**")
-            response_parts.append("Передаю Frontend Developer...")
+            try:
+                result3 = await self._execute_frontend_developer("Создай React приложение для " + message, session_id, context)
+                if result3["success"]:
+                    response_parts.append("✅ **FRONTEND DEVELOPER ЗАВЕРШИЛ РАБОТУ**")
+                    response_parts.append(f"⚛️ Создано React файлов: {len(result3.get('created_files', []))}")
+                    all_created_files.extend(result3.get('created_files', []))
+                    context.update(result3.get('context', {}))
+                else:
+                    response_parts.append("❌ **FRONTEND DEVELOPER ОШИБКА**")
+            except Exception as e:
+                response_parts.append(f"❌ **ОШИБКА FRONTEND DEVELOPER:** {str(e)}")
+            
             response_parts.append("")
-            response_parts.append(result["response"])
-            created_files = result.get("created_files", [])
+            response_parts.append("=" * 70)
             
-        elif any(word in message_lower for word in ["backend", "api", "сервер", "база", "database"]):
-            # Backend задача
-            result = await self._execute_backend_developer(message, session_id, context)
-            next_agent = "backend_developer"
+            # ЭТАП 4: BACKEND DEVELOPER
+            response_parts.append("🚀 **ЭТАП 4/5: BACKEND DEVELOPER РАБОТАЕТ...**")
+            response_parts.append("▶️ Создание FastAPI backend и базы данных...")
             
-            response_parts.append("🧠 **Main Assistant определил backend задачу**")
-            response_parts.append("Передаю Backend Developer...")
+            try:
+                result4 = await self._execute_backend_developer("Создай FastAPI backend для " + message, session_id, context)
+                if result4["success"]:
+                    response_parts.append("✅ **BACKEND DEVELOPER ЗАВЕРШИЛ РАБОТУ**")
+                    response_parts.append(f"🚀 Создано API файлов: {len(result4.get('created_files', []))}")
+                    all_created_files.extend(result4.get('created_files', []))
+                    context.update(result4.get('context', {}))
+                else:
+                    response_parts.append("❌ **BACKEND DEVELOPER ОШИБКА**")
+            except Exception as e:
+                response_parts.append(f"❌ **ОШИБКА BACKEND DEVELOPER:** {str(e)}")
+            
             response_parts.append("")
-            response_parts.append(result["response"])
-            created_files = result.get("created_files", [])
+            response_parts.append("=" * 70)
+            
+            # ЭТАП 5: FULLSTACK DEVELOPER
+            response_parts.append("🔗 **ЭТАП 5/5: FULLSTACK DEVELOPER РАБОТАЕТ...**")
+            response_parts.append("▶️ Интеграция frontend и backend, создание Docker...")
+            
+            try:
+                result5 = await self._execute_fullstack_developer("Интегрируй frontend и backend для " + message, session_id, context)
+                if result5["success"]:
+                    response_parts.append("✅ **FULLSTACK DEVELOPER ЗАВЕРШИЛ РАБОТУ**")
+                    response_parts.append(f"🔗 Создано интеграционных файлов: {len(result5.get('created_files', []))}")
+                    all_created_files.extend(result5.get('created_files', []))
+                else:
+                    response_parts.append("❌ **FULLSTACK DEVELOPER ОШИБКА**")
+            except Exception as e:
+                response_parts.append(f"❌ **ОШИБКА FULLSTACK DEVELOPER:** {str(e)}")
+            
+            response_parts.append("")
+            response_parts.append("=" * 70)
+            response_parts.append("🎉 **РАЗРАБОТКА ЗАВЕРШЕНА! ГОТОВЫЙ ПРОЕКТ СОЗДАН!**")
+            response_parts.append("=" * 70)
+            response_parts.append("")
+            
+            # Финальная сводка
+            response_parts.append("📊 **ИТОГОВАЯ СВОДКА:**")
+            response_parts.append(f"✅ Всего создано файлов: **{len(all_created_files)}**")
+            response_parts.append(f"🎯 Проект: **{message}**")
+            response_parts.append(f"📁 Директория: `{context.get('project_path', 'projects/новый_проект')}`")
+            response_parts.append("")
+            
+            # Группировка файлов по категориям
+            planning_files = [f for f in all_created_files if any(x in f for x in ['spec', 'README', 'docs'])]
+            design_files = [f for f in all_created_files if any(x in f for x in ['design', 'css', 'styles'])]
+            frontend_files = [f for f in all_created_files if any(x in f for x in ['frontend', 'components', 'pages', 'App.js', 'package.json'])]
+            backend_files = [f for f in all_created_files if any(x in f for x in ['backend', 'main.py', 'models.py', 'requirements.txt'])]
+            integration_files = [f for f in all_created_files if any(x in f for x in ['api.js', 'hooks', 'docker', 'compose'])]
+            
+            if planning_files:
+                response_parts.append("📋 **ПЛАНИРОВАНИЕ И ДОКУМЕНТАЦИЯ:**")
+                for file in planning_files:
+                    response_parts.append(f"   • `{file}`")
+                response_parts.append("")
+            
+            if design_files:
+                response_parts.append("🎨 **ДИЗАЙН И СТИЛИ:**")
+                for file in design_files:
+                    response_parts.append(f"   • `{file}`")
+                response_parts.append("")
+            
+            if frontend_files:
+                response_parts.append("⚛️ **FRONTEND (REACT):**")
+                for file in frontend_files:
+                    response_parts.append(f"   • `{file}`")
+                response_parts.append("")
+            
+            if backend_files:
+                response_parts.append("🚀 **BACKEND (FASTAPI):**")
+                for file in backend_files:
+                    response_parts.append(f"   • `{file}`")
+                response_parts.append("")
+            
+            if integration_files:
+                response_parts.append("🔗 **ИНТЕГРАЦИЯ И РАЗВЕРТЫВАНИЕ:**")
+                for file in integration_files:
+                    response_parts.append(f"   • `{file}`")
+                response_parts.append("")
+            
+            response_parts.append("🚀 **ГОТОВО К ЗАГРУЗКЕ НА GITHUB!**")
+            response_parts.append("💡 Все файлы созданы и готовы для разработки!")
+            
+            return {
+                "success": True,
+                "response": "\n".join(response_parts),
+                "created_files": all_created_files,
+                "next_agent": None,
+                "agent_type": "main_assistant"
+            }
             
         else:
-            # Общий анализ и рекомендации
-            response_parts.append("🧠 **Main Assistant анализирует ваш запрос**")
+            # Если не задача создания проекта - обычный анализ
+            response_parts.append("🧠 **Main Assistant анализирует запрос**")
             response_parts.append(f"Запрос: '{message}'")
             response_parts.append("")
+            response_parts.append("💡 **Для создания проекта используйте фразы:**")
+            response_parts.append("- 'Создай приложение...'")
+            response_parts.append("- 'Разработай сайт...'")
+            response_parts.append("- 'Построй веб-приложение...'")
             
-            # Рекомендуем подходящего агента
-            if any(word in message_lower for word in ["план", "архитектура", "структура"]):
-                response_parts.append("📋 **Рекомендация:** Для планирования проекта используйте **Project Planner**")
-                next_agent = "project_planner"
-            elif any(word in message_lower for word in ["помощь", "help", "что", "как"]):
-                response_parts.append("💡 **Я могу помочь вам с:**")
-                response_parts.append("- 🚀 Создание полноценных приложений (передам Project Planner)")
-                response_parts.append("- 🎨 Дизайн интерфейсов (передам Design Agent)")
-                response_parts.append("- ⚛️ Frontend разработка (передам Frontend Developer)")
-                response_parts.append("- 🔧 Backend разработка (передам Backend Developer)")
-                response_parts.append("- 🔗 Fullstack интеграция (передам Fullstack Developer)")
-                response_parts.append("- 🧪 Тестирование (передам Testing Expert)")
-                response_parts.append("- 🚀 Развертывание (передам Deployment Engineer)")
-                response_parts.append("")
-                response_parts.append("**Просто опишите что хотите создать, и я передам задачу подходящему агенту!**")
-            else:
-                # Если не можем определить - передаем Project Planner как default
-                response_parts.append("🤔 **Не могу точно определить тип задачи**")
-                response_parts.append("Передаю Project Planner для анализа и планирования...")
-                response_parts.append("")
-                
-                result = await self._execute_project_planner(message, session_id, context)
-                response_parts.append(result["response"])
-                created_files = result.get("created_files", [])
-                next_agent = result.get("next_agent", "project_planner")
-        
-        return {
-            "success": True,
-            "response": "\n\n".join(response_parts),
-            "created_files": created_files,
-            "next_agent": next_agent,
-            "agent_type": "main_assistant"
-        }
+            return {
+                "success": True,
+                "response": "\n".join(response_parts),
+                "created_files": [],
+                "next_agent": None,
+                "agent_type": "main_assistant"
+            }
     
     async def _execute_integration_agent(self, message: str, session_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Integration Agent - внешние интеграции"""
