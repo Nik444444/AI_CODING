@@ -80,6 +80,54 @@ class AppTemplateDB(Base):
     features = Column(Text, default="[]")  # JSON array as text
 
 
+class AgentTaskDB(Base):
+    __tablename__ = "agent_tasks"
+    
+    id = Column(String, primary_key=True)
+    agent_type = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String, default="idle")
+    priority = Column(String, default="medium")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    estimated_duration = Column(Integer, nullable=True)
+    actual_duration = Column(Integer, nullable=True)
+    dependencies = Column(Text, default="[]")  # JSON array as text
+    deliverables = Column(Text, default="[]")  # JSON array as text
+    handoff_to = Column(String, nullable=True)
+    project_id = Column(String, nullable=True)
+    session_id = Column(String, nullable=True)
+    metadata = Column(Text, default="{}")  # JSON as text
+
+
+class AgentHandoffDB(Base):
+    __tablename__ = "agent_handoffs"
+    
+    id = Column(String, primary_key=True)
+    from_agent = Column(String, nullable=False)
+    to_agent = Column(String, nullable=False)
+    task_id = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    context = Column(Text, default="{}")  # JSON as text
+    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default="pending")
+
+
+class AgentCollaborationDB(Base):
+    __tablename__ = "agent_collaborations"
+    
+    id = Column(String, primary_key=True)
+    project_id = Column(String, nullable=False)
+    session_id = Column(String, nullable=False)
+    active_agents = Column(Text, default="[]")  # JSON array as text
+    current_phase = Column(String, default="planning")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
 class APIKeyDB(Base):
     __tablename__ = "api_keys"
     
