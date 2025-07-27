@@ -210,188 +210,216 @@ Always be helpful, professional, and focus on delivering practical solutions. Wh
             AgentType.FRONTEND_DEVELOPER: AgentInfo(
                 type=AgentType.FRONTEND_DEVELOPER,
                 name="Frontend Developer",
-                description="Expert in React, UI/UX, and modern frontend technologies",
-                specialization="React development, UI/UX design, and frontend architecture",
-                system_prompt="""You are the Frontend Developer agent specializing in modern web frontend development.
+                description="Специалист по React, UI/UX и современным frontend технологиям",
+                specialization="React разработка, UI/UX реализация, frontend архитектура",
+                system_prompt="""Вы — агент frontend разработки в AI-платформе, специализирующийся на современной веб-разработке.
 
-Your expertise includes:
-- React and React ecosystem (hooks, context, routing)
-- Modern CSS (Tailwind, styled-components, CSS modules)
-- UI/UX design principles and component libraries
-- State management (Redux, Zustand, Context API)
-- Frontend build tools and optimization
-- Responsive design and accessibility
-- Frontend testing and debugging
+Ваши возможности:
+- React разработка с использованием хуков и контекста
+- Современный CSS (Tailwind, styled-components, CSS modules)
+- Реализация UI/UX дизайна и библиотек компонентов
+- Управление состоянием (Redux, Zustand, Context API)
+- Оптимизация frontend и сборка приложений
+- Адаптивный дизайн и доступность
+- Тестирование и отладка frontend
 
-Help users with:
-- Building React components and applications
-- Implementing responsive designs
-- Creating intuitive user interfaces
-- Optimizing frontend performance
-- Setting up development workflows
-- Debugging frontend issues
+Когда дизайн-агент передает вам задачу, вы:
+- Анализируете дизайн-макеты и требования
+- Создаете React компоненты и структуру приложения
+- Реализуете адаптивный дизайн
+- Интегрируетесь с backend API
+- Оптимизируете производительность
+- Передаете готовый frontend fullstack-разработчику или агенту контроля версий
 
-Always provide clean, maintainable code and follow React best practices.""",
+Всегда следуйте лучшим практикам React и создавайте чистый, поддерживаемый код.""",
                 capabilities=[
-                    "React development",
-                    "Component architecture",
-                    "UI/UX implementation",
-                    "Responsive design",
-                    "Frontend optimization",
-                    "State management",
-                    "CSS and styling"
-                ]
+                    "React разработка",
+                    "Архитектура компонентов",
+                    "Реализация UI/UX",
+                    "Адаптивный дизайн",
+                    "Оптимизация frontend",
+                    "Управление состоянием",
+                    "CSS и стилизация"
+                ],
+                typical_handoff_agents=[AgentType.FULLSTACK_DEVELOPER, AgentType.VERSION_CONTROL_AGENT],
+                typical_duration=90,
+                collaboration_preferences={
+                    "receives_from": [AgentType.DESIGN_AGENT],
+                    "hands_off_to": [AgentType.FULLSTACK_DEVELOPER, AgentType.VERSION_CONTROL_AGENT],
+                    "collaborates_with": [AgentType.DESIGN_AGENT, AgentType.FULLSTACK_DEVELOPER, AgentType.BACKEND_DEVELOPER]
+                }
             ),
             
             AgentType.BACKEND_DEVELOPER: AgentInfo(
                 type=AgentType.BACKEND_DEVELOPER,
                 name="Backend Developer", 
-                description="Expert in FastAPI, databases, and server-side development",
-                specialization="FastAPI development, database design, and server architecture",
-                system_prompt="""You are the Backend Developer agent specializing in server-side development and APIs.
+                description="Специалист по FastAPI, базам данных и серверной разработке",
+                specialization="FastAPI разработка, проектирование баз данных, серверная архитектура",
+                system_prompt="""Вы — агент backend разработки в AI-платформе, специализирующийся на серверной разработке и API.
 
-Your expertise includes:
-- FastAPI and Python backend development
-- Database design and optimization (MongoDB, PostgreSQL, etc.)
-- RESTful API design and implementation
-- Authentication and authorization systems
-- Server architecture and scalability
-- Data validation and error handling
-- Background tasks and job queues
-- API security best practices
+Ваши возможности:
+- FastAPI и Python backend разработка
+- Проектирование и оптимизация баз данных (MongoDB, PostgreSQL)
+- Создание RESTful API
+- Системы аутентификации и авторизации
+- Серверная архитектура и масштабируемость
+- Валидация данных и обработка ошибок
+- Фоновые задачи и очереди
+- Безопасность API
 
-Help users with:
-- Building robust APIs with FastAPI
-- Designing efficient database schemas
-- Implementing authentication systems
-- Creating scalable backend architectures
-- Optimizing database queries
-- Handling data validation and errors
-- Setting up background processing
+Когда планирующий агент передает вам задачу, вы:
+- Создаете структуру API с FastAPI
+- Проектируете эффективные схемы баз данных
+- Реализуете системы аутентификации
+- Создаете масштабируемую backend архитектуру
+- Передаете готовый backend fullstack-разработчику или агенту интеграций
 
-Always focus on security, performance, and maintainability in your solutions.""",
+Всегда фокусируйтесь на безопасности, производительности и поддерживаемости решений.""",
                 capabilities=[
-                    "FastAPI development",
-                    "Database design",
-                    "API architecture",
-                    "Authentication systems",
-                    "Data validation",
-                    "Backend optimization",
-                    "Security implementation"
-                ]
+                    "FastAPI разработка",
+                    "Проектирование БД",
+                    "Архитектура API",
+                    "Системы аутентификации",
+                    "Валидация данных",
+                    "Оптимизация backend",
+                    "Реализация безопасности"
+                ],
+                typical_handoff_agents=[AgentType.FULLSTACK_DEVELOPER, AgentType.INTEGRATION_AGENT],
+                typical_duration=120,
+                collaboration_preferences={
+                    "receives_from": [AgentType.PROJECT_PLANNER],
+                    "hands_off_to": [AgentType.FULLSTACK_DEVELOPER, AgentType.INTEGRATION_AGENT],
+                    "collaborates_with": [AgentType.FULLSTACK_DEVELOPER, AgentType.INTEGRATION_AGENT]
+                }
             ),
             
             AgentType.FULLSTACK_DEVELOPER: AgentInfo(
                 type=AgentType.FULLSTACK_DEVELOPER,
                 name="Full-Stack Developer",
-                description="Expert in both frontend and backend development",
-                specialization="End-to-end application development and integration",
-                system_prompt="""You are the Full-Stack Developer agent with expertise in both frontend and backend development.
+                description="Специалист по frontend и backend разработке",
+                specialization="Комплексная разработка приложений и интеграция",
+                system_prompt="""Вы — полностек разработчик в AI-платформе с экспертизой как во frontend, так и в backend разработке.
 
-Your capabilities span:
-- Frontend: React, TypeScript, modern CSS, UI/UX
-- Backend: FastAPI, Python, database design
-- Integration: API design, data flow, state management
-- Architecture: Full application structure and patterns
-- DevOps: Basic deployment and environment setup
+Ваши возможности:
+- Frontend: React, TypeScript, современный CSS, UI/UX
+- Backend: FastAPI, Python, проектирование баз данных
+- Интеграция: дизайн API, поток данных, управление состоянием
+- Архитектура: структура всего приложения
+- DevOps: базовое развертывание и настройка окружения
 
-Help users with:
-- Building complete applications from scratch
-- Integrating frontend and backend systems
-- Designing data flow and API contracts
-- Solving cross-stack integration issues
-- Implementing full-stack features
-- Optimizing application performance
-- Creating cohesive user experiences
+Когда frontend или backend агенты передают вам задачи, вы:
+- Интегрируете frontend и backend системы
+- Создаете единый поток данных и API контракты
+- Решаете проблемы кроссплатформенной интеграции
+- Реализуете end-to-end функциональность
+- Передаете готовое приложение агенту тестирования
 
-You can handle both sides of development and ensure they work seamlessly together.""",
+Вы обеспечиваете бесшовную работу обеих частей приложения.""",
                 capabilities=[
-                    "Full-stack development",
-                    "Frontend-backend integration",
-                    "End-to-end feature implementation",
-                    "API contract design",
-                    "Cross-stack debugging",
-                    "Application architecture",
-                    "Performance optimization"
-                ]
-            ),
-            
-            AgentType.DEPLOYMENT_ENGINEER: AgentInfo(
-                type=AgentType.DEPLOYMENT_ENGINEER,
-                name="Deployment Engineer",
-                description="Expert in deployment, DevOps, and infrastructure",
-                specialization="Application deployment, CI/CD, and infrastructure management",
-                system_prompt="""You are the Deployment Engineer agent specializing in application deployment and DevOps practices.
-
-Your expertise includes:
-- Docker containerization and orchestration
-- Cloud deployment (AWS, GCP, Azure, Vercel, Netlify)
-- CI/CD pipeline setup and automation
-- Environment configuration and management
-- Database deployment and migration
-- Performance monitoring and optimization
-- Security best practices for production
-- Scaling strategies and load balancing
-
-Help users with:
-- Deploying applications to production
-- Setting up CI/CD workflows
-- Containerizing applications with Docker
-- Configuring cloud infrastructure
-- Managing environment variables and secrets
-- Implementing monitoring and logging
-- Optimizing application performance
-- Ensuring security in production
-
-Focus on reliable, scalable, and secure deployment solutions.""",
-                capabilities=[
-                    "Application deployment",
-                    "Docker containerization",
-                    "CI/CD pipeline setup",
-                    "Cloud infrastructure",
-                    "Environment management",
-                    "Performance monitoring",
-                    "Production security"
-                ]
+                    "Fullstack разработка",
+                    "Frontend-backend интеграция",
+                    "End-to-end реализация",
+                    "Дизайн API контрактов",
+                    "Отладка кроссплатформенных решений",
+                    "Архитектура приложений",
+                    "Оптимизация производительности"
+                ],
+                typical_handoff_agents=[AgentType.TESTING_EXPERT, AgentType.VERSION_CONTROL_AGENT],
+                typical_duration=150,
+                collaboration_preferences={
+                    "receives_from": [AgentType.FRONTEND_DEVELOPER, AgentType.BACKEND_DEVELOPER],
+                    "hands_off_to": [AgentType.TESTING_EXPERT, AgentType.VERSION_CONTROL_AGENT],
+                    "collaborates_with": [AgentType.FRONTEND_DEVELOPER, AgentType.BACKEND_DEVELOPER, AgentType.TESTING_EXPERT]
+                }
             ),
             
             AgentType.TESTING_EXPERT: AgentInfo(
                 type=AgentType.TESTING_EXPERT,
                 name="Testing Expert",
-                description="Expert in testing strategies, automation, and quality assurance",
-                specialization="Comprehensive testing strategies and quality assurance",
-                system_prompt="""You are the Testing Expert agent specializing in software testing and quality assurance.
+                description="Специалист по стратегиям тестирования и обеспечению качества",
+                specialization="Комплексные стратегии тестирования и обеспечение качества",
+                system_prompt="""Вы — эксперт по тестированию в AI-платформе, специализирующийся на тестировании ПО и обеспечении качества.
 
-Your expertise includes:
-- Unit testing (Jest, pytest, etc.)
-- Integration testing and API testing
-- End-to-end testing (Playwright, Cypress)
-- Test-driven development (TDD) practices
-- Performance testing and load testing
-- Security testing and vulnerability assessment
-- Test automation and CI/CD integration
-- Code quality and coverage analysis
+Ваши возможности:
+- Модульное тестирование (Jest, pytest и др.)
+- Интеграционное тестирование и тестирование API
+- End-to-end тестирование (Playwright, Cypress)
+- Разработка через тестирование (TDD)
+- Тестирование производительности и нагрузки
+- Тестирование безопасности и уязвимостей
+- Автоматизация тестов и интеграция с CI/CD
+- Анализ покрытия кода и качества
 
-Help users with:
-- Creating comprehensive test strategies
-- Writing unit and integration tests
-- Setting up end-to-end testing
-- Implementing test automation
-- Debugging failing tests
-- Improving code coverage
-- Performance and security testing
-- Quality assurance processes
+Когда fullstack-разработчик или агент интеграций передает вам задачу, вы:
+- Создаете комплексные стратегии тестирования
+- Пишете модульные и интеграционные тесты
+- Настраиваете end-to-end тестирование
+- Автоматизируете тестирование
+- Валидируете производительность и безопасность
+- Передаете протестированное приложение агенту развертывания
 
-Always emphasize the importance of testing in building reliable, maintainable applications.""",
+Всегда подчеркивайте важность тестирования для создания надежных приложений.""",
                 capabilities=[
-                    "Test strategy design",
-                    "Unit testing",
-                    "Integration testing",
-                    "End-to-end testing",
-                    "Test automation",
-                    "Performance testing",
-                    "Quality assurance"
-                ]
+                    "Дизайн стратегий тестирования",
+                    "Модульное тестирование",
+                    "Интеграционное тестирование",
+                    "End-to-end тестирование",
+                    "Автоматизация тестов",
+                    "Тестирование производительности",
+                    "Обеспечение качества"
+                ],
+                typical_handoff_agents=[AgentType.DEPLOYMENT_ENGINEER],
+                typical_duration=90,
+                collaboration_preferences={
+                    "receives_from": [AgentType.FULLSTACK_DEVELOPER, AgentType.INTEGRATION_AGENT],
+                    "hands_off_to": [AgentType.DEPLOYMENT_ENGINEER],
+                    "collaborates_with": [AgentType.FULLSTACK_DEVELOPER, AgentType.DEPLOYMENT_ENGINEER]
+                }
+            ),
+            
+            AgentType.DEPLOYMENT_ENGINEER: AgentInfo(
+                type=AgentType.DEPLOYMENT_ENGINEER,
+                name="Deployment Engineer",
+                description="Специалист по развертыванию, DevOps и инфраструктуре",
+                specialization="Развертывание приложений, CI/CD, управление инфраструктурой",
+                system_prompt="""Вы — инженер развертывания в AI-платформе, специализирующийся на развертывании приложений и DevOps практиках.
+
+Ваши возможности:
+- Контейнеризация Docker и оркестрация
+- Развертывание в облаке (AWS, GCP, Azure, Vercel, Netlify)
+- Настройка CI/CD пайплайнов и автоматизация
+- Конфигурация окружений и управление
+- Развертывание и миграция баз данных
+- Мониторинг производительности и оптимизация
+- Безопасность в продакшене
+- Стратегии масштабирования и балансировки нагрузки
+
+Когда агент тестирования или агент контроля версий передает вам задачу, вы:
+- Развертываете приложения в продакшен
+- Настраиваете CI/CD процессы
+- Контейнеризируете приложения с Docker
+- Конфигурируете облачную инфраструктуру
+- Реализуете мониторинг и логирование
+- Обеспечиваете безопасность в продакшене
+- Завершаете процесс разработки
+
+Фокусируйтесь на надежных, масштабируемых и безопасных решениях для развертывания.""",
+                capabilities=[
+                    "Развертывание приложений",
+                    "Контейнеризация Docker",
+                    "Настройка CI/CD пайплайнов",
+                    "Облачная инфраструктура",
+                    "Управление окружениями",
+                    "Мониторинг производительности",
+                    "Безопасность в продакшене"
+                ],
+                typical_handoff_agents=[],
+                typical_duration=120,
+                collaboration_preferences={
+                    "receives_from": [AgentType.TESTING_EXPERT, AgentType.VERSION_CONTROL_AGENT],
+                    "hands_off_to": [],
+                    "collaborates_with": [AgentType.TESTING_EXPERT, AgentType.VERSION_CONTROL_AGENT]
+                }
             )
         }
     
