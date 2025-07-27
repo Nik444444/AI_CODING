@@ -8,11 +8,14 @@ from enum import Enum
 class AgentType(str, Enum):
     MAIN_ASSISTANT = "main_assistant"
     PROJECT_PLANNER = "project_planner"
+    DESIGN_AGENT = "design_agent"
     FRONTEND_DEVELOPER = "frontend_developer"
     BACKEND_DEVELOPER = "backend_developer"
     FULLSTACK_DEVELOPER = "fullstack_developer"
-    DEPLOYMENT_ENGINEER = "deployment_engineer"
+    INTEGRATION_AGENT = "integration_agent"
+    VERSION_CONTROL_AGENT = "version_control_agent"
     TESTING_EXPERT = "testing_expert"
+    DEPLOYMENT_ENGINEER = "deployment_engineer"
 
 
 class MessageRole(str, Enum):
