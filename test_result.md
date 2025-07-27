@@ -405,15 +405,19 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "2.0"
-  test_sequence: 2
+  version: "2.1"
+  test_sequence: 3
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus: 
+    - "API Keys Manager Page"
+    - "API Keys Service Integration"
+  stuck_tasks: 
+    - "API Keys Manager Page"
+    - "API Keys Service Integration"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 agent_communication:
     - agent: "testing"
@@ -422,5 +426,9 @@ agent_communication:
       message: "Implemented complete API key management system with backend endpoints, database models, AI service integration, and frontend page. Ready for frontend testing to verify the complete user workflow."
     - agent: "testing"
       message: "✅ Frontend API Keys Management testing completed successfully! All 4 high-priority tasks are working correctly: 1) Navigation from Dashboard settings button works perfectly 2) API Keys page loads and displays existing keys (found 3: Anthropic, OpenAI, Gemini) 3) Service integration working - proper error handling for duplicates 4) UI components render and function correctly. Minor issues: page title selector and 404 error on route refresh, but core functionality is solid. Ready for production use."
+    - agent: "main"
+      message: "User reported CORS errors preventing API key saves. Updated REACT_APP_BACKEND_URL from old miniapp-wvsxfa.fly.dev to correct ai-coding-51ss.onrender.com. Backend testing confirms new URL works perfectly. Frontend needs testing to verify connection issues resolved."
+    - agent: "testing"
+      message: "✅ Backend verified working perfectly with new URL https://ai-coding-51ss.onrender.com. All API key endpoints functional, CORS properly configured for frontend domain. Issue is NOT with backend - suspect frontend browser cache or connection handling."
     - agent: "testing"
       message: "🔍 CORS ERROR INVESTIGATION COMPLETED: Comprehensive testing shows backend is working perfectly with new URL (https://ai-coding-51ss.onrender.com). ✅ CORS properly configured for frontend domain (https://kodix.netlify.app) ✅ All API key CRUD operations functional ✅ Database persistence working ✅ No authentication issues ✅ All 3 providers (OpenAI, Anthropic, Gemini) supported. If users still see CORS errors, issue is likely: browser caching, frontend code using wrong URL, or network/proxy issues. Backend is NOT the problem."
