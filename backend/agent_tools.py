@@ -291,8 +291,9 @@ class AgentToolsManager:
                 'o': 'json'
             }
             
-            async with aiohttp.ClientSession() as session:
-                async with session.get(search_url, params=params, headers=headers) as response:
+            # Use the context manager's session if available, otherwise create a new one
+            if self.session:
+                async with self.session.get(search_url, params=params, headers=headers) as response:
                     html = await response.text()
                     
                     soup = BeautifulSoup(html, 'html.parser')
@@ -319,6 +320,36 @@ class AgentToolsManager:
                         "results": results,
                         "total_found": len(results)
                     }
+            else:
+                # Fallback to creating own session if context manager not used
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(search_url, params=params, headers=headers) as response:
+                        html = await response.text()
+                        
+                        soup = BeautifulSoup(html, 'html.parser')
+                        results = []
+                        
+                        for result in soup.find_all('div', class_='result')[:10]:  # Первые 10 результатов
+                            title_elem = result.find('a', class_='result__a')
+                            snippet_elem = result.find('a', class_='result__snippet')
+                            
+                            if title_elem:
+                                title = title_elem.get_text(strip=True)
+                                url = title_elem.get('href', '')
+                                snippet = snippet_elem.get_text(strip=True) if snippet_elem else ""
+                                
+                                results.append({
+                                    "title": title,
+                                    "url": url,
+                                    "snippet": snippet
+                                })
+                        
+                        return {
+                            "success": True,
+                            "query": query,
+                            "results": results,
+                            "total_found": len(results)
+                        }
                     
         except Exception as e:
             return {
