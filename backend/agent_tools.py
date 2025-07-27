@@ -365,8 +365,11 @@ class AgentToolsManager:
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
             
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, timeout=30) as response:
+            # Use the context manager's session if available, otherwise create a new one
+            session_to_use = self.session if self.session else aiohttp.ClientSession()
+            
+            if self.session:
+                async with self.session.get(url, headers=headers, timeout=30) as response:
                     if response.status != 200:
                         return {
                             "success": False,
@@ -411,6 +414,54 @@ class AgentToolsManager:
                         "title": soup.title.string if soup.title else "",
                         "extraction_method": extraction_method
                     }
+            else:
+                # Fallback to creating own session if context manager not used
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, headers=headers, timeout=30) as response:
+                        if response.status != 200:
+                            return {
+                                "success": False,
+                                "url": url,
+                                "error": f"HTTP {response.status}: {response.reason}"
+                            }
+                        
+                        html = await response.text()
+                        soup = BeautifulSoup(html, 'html.parser')
+                        
+                        # Удалить скрипты и стили
+                        for script in soup(["script", "style"]):
+                            script.decompose()
+                        
+                        # Извлечь текст в зависимости от вопроса
+                        if "title" in question.lower():
+                            content = soup.title.string if soup.title else "No title found"
+                        elif "links" in question.lower():
+                            links = [{"text": a.get_text(strip=True), "href": a.get('href')} 
+                                    for a in soup.find_all('a', href=True)]
+                            content = json.dumps(links, indent=2, ensure_ascii=False)
+                        elif "images" in question.lower():
+                            images = [{"alt": img.get('alt', ''), "src": img.get('src')} 
+                                     for img in soup.find_all('img', src=True)]
+                            content = json.dumps(images, indent=2, ensure_ascii=False)
+                        else:
+                            # Извлечь основной текст
+                            content = soup.get_text()
+                            # Очистить лишние пробелы
+                            lines = (line.strip() for line in content.splitlines())
+                            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+                            content = ' '.join(chunk for chunk in chunks if chunk)
+                            
+                            # Ограничить размер для больших страниц
+                            if len(content) > 5000:
+                                content = content[:5000] + "... (content truncated)"
+                        
+                        return {
+                            "success": True,
+                            "url": url,
+                            "content": content,
+                            "title": soup.title.string if soup.title else "",
+                            "extraction_method": extraction_method
+                        }
                     
         except Exception as e:
             return {
