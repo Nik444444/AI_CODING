@@ -1076,14 +1076,32 @@ class BackendTester:
         self.test_delete_api_key()
         self.test_get_nonexistent_api_key()
         
-        # Emergent Tools Integration Tests
-        print("\n🛠️ Testing Emergent Tools Integration...")
+        # Emergent Tools Integration Tests - Specific Review Request Tests
+        print("\n🛠️ Testing Emergent Tools Integration (Review Request Specific Tests)...")
+        print("Testing the 4 specific tools that were failing according to continuation_request:")
+        
+        # 1. Command Execution Testing
+        print("\n1. Command Execution Testing:")
+        self.test_emergent_tools_command_execution_date()  # Specific failing test
+        self.test_emergent_tools_command_execution_pwd()   # Additional command test
+        
+        # 2. Integration Playbook Testing  
+        print("\n2. Integration Playbook Testing:")
+        self.test_emergent_tools_integration_playbook_openai()  # Specific failing test
+        
+        # 3. Additional Tool Testing (should still work after async fix)
+        print("\n3. Additional Tool Testing:")
+        self.test_emergent_tools_web_search_python_tutorials()  # Specific test from review
+        self.test_emergent_tools_web_analysis_httpbin()         # Specific test from review
+        
+        # 4. File Creation Testing (should still work)
+        print("\n4. File Creation Testing:")
+        self.test_emergent_tools_file_creation_button_example()  # Specific test from review
+        self.test_emergent_tools_file_creation_python_api()     # Specific test from review
+        
+        # Legacy tests for completeness
+        print("\n5. Legacy Emergent Tools Tests:")
         self.test_emergent_tools_web_analysis()
-        self.test_emergent_tools_web_search()
-        self.test_emergent_tools_file_creation_react()
-        self.test_emergent_tools_file_creation_python()
-        self.test_emergent_tools_command_execution()
-        self.test_emergent_tools_integration_playbook()
         self.test_emergent_tools_image_generation()
         
         # Summary
