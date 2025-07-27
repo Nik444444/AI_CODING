@@ -141,6 +141,15 @@ const Dashboard = () => {
             <Button 
               variant="ghost" 
               size="sm" 
+              onClick={() => navigate('/collaboration/demo-session')}
+              className="text-gray-400 hover:text-white"
+              title="Сотрудничество агентов"
+            >
+              <Users className="w-5 h-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={() => navigate('/api-keys')}
               className="text-gray-400 hover:text-white"
               title="Управление API ключами"
