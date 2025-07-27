@@ -1,0 +1,30 @@
+[
+  {
+    "from_agent": "project_planner",
+    "to_agent": "design_agent",
+    "session_id": "1753639401.39311",
+    "timestamp": "2025-07-27T18:03:23.476401",
+    "context": {
+      "project_path": "projects/project_1753639401.39311",
+      "requirements": "Проанализируй сайт https://app.emergent.sh/ и создай точную копию с теми же функциями",
+      "tech_spec_file": "projects/project_1753639401.39311/tech_spec.md"
+    },
+    "message": "Планирование завершено. Передаю проект для создания UI/UX дизайна."
+  },
+  {
+    "from_agent": "design_agent",
+    "to_agent": "frontend_developer",
+    "session_id": "1753639401.39311",
+    "timestamp": "2025-07-27T18:03:26.492585",
+    "context": {
+      "project_path": "projects/project_1753639401.39311",
+      "design_files": [
+        "projects/project_1753639401.39311/design_concept.md",
+        "projects/project_1753639401.39311/frontend/src/styles/design-system.css",
+        "projects/project_1753639401.39311/frontend/src/components/Button/Button.jsx"
+      ],
+      "design_concept": "projects/project_1753639401.39311/design_concept.md"
+    },
+    "message": "Дизайн готов. Передаю frontend-разработчику для реализации в React."
+  }
+]
