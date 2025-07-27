@@ -192,7 +192,13 @@ ${template.tech_stack ? template.tech_stack.map(t => `• ${t}`).join('\n') : ''
         agent_type: response.message.agent_type,
         suggested_actions: response.suggested_actions || [],
         metadata: response.message.metadata || {},
-        created_files: response.message.metadata?.created_files || []
+        created_files: response.message.metadata?.created_files || [],
+        tool_results: response.message.metadata?.tool_results || [],
+        search_results: response.message.metadata?.search_results || [],
+        generated_images: response.message.metadata?.generated_images || [],
+        command_output: response.message.metadata?.command_output,
+        integration_playbook: response.message.metadata?.integration_playbook,
+        file_content: response.message.metadata?.file_content
       };
 
       setMessages(prev => [...prev, assistantMessage]);
