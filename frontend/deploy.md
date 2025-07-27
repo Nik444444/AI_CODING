@@ -50,7 +50,7 @@ Click "Deploy site" - Netlify will automatically build and deploy.
 cd /app/frontend
 
 # Set production backend URL
-export REACT_APP_BACKEND_URL=https://emergent-clone-backend.fly.dev
+export REACT_APP_BACKEND_URL=https://ai-coding.fly.dev
 
 # Build the app
 npm run build
