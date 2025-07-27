@@ -39,7 +39,6 @@ const ChatInterface = () => {
   useEffect(() => {
     loadInitialData();
     initializeChat();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
