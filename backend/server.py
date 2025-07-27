@@ -159,7 +159,13 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
         message_metadata = {
             "created_files": created_files,
             "next_agent": next_agent,
-            "success": ai_response_data.get("success", True)
+            "success": ai_response_data.get("success", True),
+            "tool_results": tool_results,
+            "search_results": search_results,
+            "generated_images": generated_images,
+            "command_output": command_output,
+            "integration_playbook": integration_playbook,
+            "file_content": file_content
         }
         
         assistant_message_db = ChatMessageDB(
