@@ -1,0 +1,30 @@
+[
+  {
+    "from_agent": "project_planner",
+    "to_agent": "design_agent",
+    "session_id": "1753636346.749953",
+    "timestamp": "2025-07-27T17:12:28.831505",
+    "context": {
+      "project_path": "projects/project_1753636346.749953",
+      "requirements": "создай мини телеграм магазин кроссовок",
+      "tech_spec_file": "projects/project_1753636346.749953/tech_spec.md"
+    },
+    "message": "Планирование завершено. Передаю проект для создания UI/UX дизайна."
+  },
+  {
+    "from_agent": "design_agent",
+    "to_agent": "frontend_developer",
+    "session_id": "1753636346.749953",
+    "timestamp": "2025-07-27T17:12:31.848022",
+    "context": {
+      "project_path": "projects/project_1753636346.749953",
+      "design_files": [
+        "projects/project_1753636346.749953/design_concept.md",
+        "projects/project_1753636346.749953/frontend/src/styles/design-system.css",
+        "projects/project_1753636346.749953/frontend/src/components/Button/Button.jsx"
+      ],
+      "design_concept": "projects/project_1753636346.749953/design_concept.md"
+    },
+    "message": "Дизайн готов. Передаю frontend-разработчику для реализации в React."
+  }
+]

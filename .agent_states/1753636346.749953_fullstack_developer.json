@@ -1,0 +1,16 @@
+{
+  "agent_type": "fullstack_developer",
+  "session_id": "1753636346.749953",
+  "timestamp": "2025-07-27T17:12:42.870707",
+  "state": {
+    "project_path": "projects/project_1753636346.749953",
+    "integration_ready": true,
+    "integration_files": [
+      "projects/project_1753636346.749953/frontend/src/services/api.js",
+      "projects/project_1753636346.749953/frontend/src/hooks/useApi.js",
+      "projects/project_1753636346.749953/backend/Dockerfile",
+      "projects/project_1753636346.749953/docker-compose.yml"
+    ],
+    "phase": "testing"
+  }
+}
