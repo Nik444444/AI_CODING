@@ -1,0 +1,15 @@
+{
+  "agent_type": "design_agent",
+  "session_id": "1753635900.366635",
+  "timestamp": "2025-07-27T17:05:00.466587",
+  "state": {
+    "project_path": "projects/project_1753635900.366635",
+    "design_ready": true,
+    "design_files": [
+      "projects/project_1753635900.366635/design_concept.md",
+      "projects/project_1753635900.366635/frontend/src/styles/design-system.css",
+      "projects/project_1753635900.366635/frontend/src/components/Button/Button.jsx"
+    ],
+    "phase": "frontend_development"
+  }
+}
