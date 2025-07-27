@@ -15,7 +15,8 @@ import {
   RefreshCw,
   Globe,
   MessageSquare,
-  Monitor
+  Monitor,
+  Users
 } from 'lucide-react';
 import { templateAPI, projectAPI } from '../services/api';
 
