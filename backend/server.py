@@ -134,8 +134,8 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
         db.add(user_message)
         await db.commit()
         
-        # Get AI response
-        ai_response = await ai_service.send_message(
+        # Get AI response from real agent executor
+        ai_response_data = await ai_service.send_message(
             session_id=session_id,
             message=request.message,
             agent_type=agent_type,
@@ -143,8 +143,14 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
             model=request.model_name
         )
         
-        # Generate suggested actions based on context
-        suggested_actions = _generate_suggested_actions(request.message, agent_type)
+        # Extract response text
+        ai_response = ai_response_data.get("response", "Ошибка выполнения агента")
+        actual_agent_type = ai_response_data.get("agent_type", agent_type.value)
+        created_files = ai_response_data.get("created_files", [])
+        next_agent = ai_response_data.get("next_agent")
+        
+        # Generate suggested actions based on context and agent response
+        suggested_actions = _generate_suggested_actions(request.message, agent_type, ai_response_data)
         
         # Save assistant message
         assistant_message_db = ChatMessageDB(
