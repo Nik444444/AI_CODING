@@ -82,14 +82,25 @@ const ChatInterface = () => {
       const welcomeMessage = {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: `Great choice! Let's build a ${template.name}. ${template.description}\n\nI'll help you create this step by step. What specific features would you like to include?`,
+        content: `🎯 **Отличный выбор!** Давайте создадим ${template.name}.
+
+${template.description}
+
+Я помогу вам создать это приложение пошагово. Вот что мы можем включить:
+
+${template.features ? template.features.map(f => `• ${f}`).join('\n') : ''}
+
+**Технологический стек:**
+${template.tech_stack ? template.tech_stack.map(t => `• ${t}`).join('\n') : ''}
+
+Какие конкретные функции вы хотели бы добавить или с чего начнем?`,
         timestamp: new Date().toLocaleTimeString(),
         agent_type: 'project_planner',
         suggested_actions: [
-          "Show me the tech stack",
-          "Create project structure",
-          "Start with frontend",
-          "Plan the database"
+          "Показать техническое задание",
+          "Создать структуру проекта", 
+          "Начать с frontend",
+          "Спланировать базу данных"
         ]
       };
       setMessages([welcomeMessage]);
@@ -100,9 +111,24 @@ const ChatInterface = () => {
       const welcomeMessage = {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: `Hi! I'm your AI development assistant. I can help you build full-stack applications, analyze websites, create components, and much more.\n\nWhat would you like to build today?`,
+        content: `👋 **Привет! Я ваш AI-ассистент разработчика.**
+
+Я помогу вам:
+• 🏗️ **Создавать приложения** - от идеи до деплоя
+• 🔍 **Анализировать веб-сайты** - понимать структуру и функциональность  
+• 💻 **Писать код** - на любых языках и фреймворках
+• 🎨 **Проектировать интерфейсы** - современные и удобные
+• 🚀 **Оптимизировать проекты** - производительность и качество
+
+**Что бы вы хотели создать или изучить сегодня?**`,
         timestamp: new Date().toLocaleTimeString(),
-        agent_type: 'main_assistant'
+        agent_type: 'main_assistant',
+        suggested_actions: [
+          "Создать новое приложение",
+          "Проанализировать веб-сайт", 
+          "Помочь с кодом",
+          "Показать возможности"
+        ]
       };
       setMessages([welcomeMessage]);
     }
