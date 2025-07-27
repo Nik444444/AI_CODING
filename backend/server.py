@@ -152,14 +152,20 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
         # Generate suggested actions based on context and agent response
         suggested_actions = _generate_suggested_actions(request.message, agent_type, ai_response_data)
         
-        # Save assistant message
+        # Save assistant message with additional metadata
+        message_metadata = {
+            "created_files": created_files,
+            "next_agent": next_agent,
+            "success": ai_response_data.get("success", True)
+        }
+        
         assistant_message_db = ChatMessageDB(
             id=f"msg_{datetime.utcnow().timestamp()}_assistant",
             session_id=session_id,
             role=MessageRole.ASSISTANT,
             content=ai_response,
-            agent_type=agent_type,
-            message_metadata=serialize_json_field({}),
+            agent_type=actual_agent_type,
+            message_metadata=serialize_json_field(message_metadata),
             suggested_actions=serialize_json_field(suggested_actions)
         )
         db.add(assistant_message_db)
