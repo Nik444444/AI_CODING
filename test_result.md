@@ -533,7 +533,29 @@ frontend:
           agent: "testing"
           comment: "✅ Sidebar and navigation working correctly: 1) ✅ Sidebar toggle button ('Чаты') functional 2) ✅ Sidebar opens/closes smoothly with proper animations 3) ✅ 'Новый чат' button present and functional 4) ✅ Chat search input with placeholder 'Поиск чатов...' 5) ✅ Session management and chat history display 6) ✅ Responsive design for mobile/desktop 7) ✅ Proper styling with dark theme consistency. Navigation matches professional chat applications."
 
-  - task: "Model Selection and Settings"
+  - task: "Frontend Tools Results Display"
+    implemented: true
+    working: true
+    file: "frontend/src/components/ChatInterface.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ Обновлен ChatInterface для отображения результатов всех инструментов: веб-поиска, анализа сайтов, сгенерированных изображений, вывода команд, playbook интеграций. Все результаты красиво отформатированы."
+
+  - task: "Frontend Enhanced Message Processing"
+    implemented: true
+    working: true
+    file: "frontend/src/components/ChatInterface.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ Расширена обработка сообщений для поддержки новых типов данных от инструментов: tool_results, search_results, generated_images, command_output, integration_playbook."
     implemented: true
     working: true
     file: "frontend/src/components/ChatInterface.jsx"
