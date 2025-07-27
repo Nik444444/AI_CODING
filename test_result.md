@@ -128,6 +128,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ All 5 API key endpoints working perfectly: POST, GET (all), GET (specific), PUT, DELETE. 100% success rate for new functionality."
+        - working: true
+          agent: "testing" 
+          comment: "✅ Backend verified working with new URL https://ai-coding-51ss.onrender.com - all endpoints functional, CORS properly configured"
 
   - task: "API Key Validation and Security"
     implemented: true
@@ -336,11 +339,11 @@ backend:
 frontend:
   - task: "API Keys Manager Page"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/components/ApiKeysManager.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -348,14 +351,17 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ API Keys Manager page working correctly. Successfully displays 3 existing keys (Anthropic, OpenAI, Gemini), form functionality works, duplicate key prevention shows proper error messages. Minor: Page title selector issue but core functionality intact."
+        - working: false
+          agent: "main"
+          comment: "User reported CORS errors and API key save failures. Updated REACT_APP_BACKEND_URL from miniapp-wvsxfa.fly.dev to ai-coding-51ss.onrender.com. Backend confirmed working but frontend still has connection issues."
 
   - task: "API Keys Service Integration"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/services/api.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -363,6 +369,9 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ API Keys service integration working perfectly. Successfully loads existing keys, handles form submissions, and displays proper error messages for duplicate keys ('API key for openai already exists. Use PUT to update.')."
+        - working: false
+          agent: "main"
+          comment: "User reports CORS errors when saving API keys. Backend URL updated but frontend may need browser cache clearing or have other connection issues."
 
   - task: "Navigation and Routing"
     implemented: true
