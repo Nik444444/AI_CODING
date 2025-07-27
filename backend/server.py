@@ -771,12 +771,14 @@ async def get_collaboration_tasks(session_id: str):
 @api_router.post("/collaboration/task/{task_id}/update")
 async def update_task_status(
     task_id: str,
-    status: str,
-    message: Optional[str] = None
+    request: dict
 ):
     """Update task status"""
     try:
         from models import AgentStatus
+        
+        status = request.get("status")
+        message = request.get("message", "")
         
         # Convert string to AgentStatus enum
         try:
@@ -790,7 +792,7 @@ async def update_task_status(
         success = collaboration_manager.update_task_status(
             task_id=task_id,
             status=agent_status,
-            message=message or ""
+            message=message
         )
         
         if not success:
