@@ -1,6 +1,9 @@
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from models import AgentType, AgentInfo, AgentStatus
 from datetime import datetime, timedelta
+
+if TYPE_CHECKING:
+    from models import AgentCollaboration, AgentTask
 
 
 class AgentManager:
