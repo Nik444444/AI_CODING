@@ -232,12 +232,68 @@ ${error.message || 'Неизвестная ошибка'}
 
   const handleSuggestedAction = (action) => {
     setInputValue(action);
+    // Auto focus textarea
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
   };
 
   const handleModelChange = (value) => {
     const [provider, model] = value.split('/');
     setSelectedProvider(provider);
     setSelectedModel(model);
+  };
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const validFiles = files.filter(file => {
+      // Allow text files, images, and code files
+      const allowedTypes = [
+        'text/', 'image/', 'application/json', 'application/javascript',
+        '.js', '.jsx', '.ts', '.tsx', '.py', '.html', '.css', '.md', '.txt'
+      ];
+      
+      return allowedTypes.some(type => 
+        file.type.startsWith(type) || file.name.toLowerCase().endsWith(type)
+      );
+    });
+
+    if (validFiles.length !== files.length) {
+      alert('Некоторые файлы не поддерживаются. Разрешены: текстовые файлы, изображения, код.');
+    }
+
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeUploadedFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setSessionId(null);
+    setInputValue('');
+    setUploadedFiles([]);
+    setSidebarOpen(false);
+    initializeChat();
+  };
+
+  const handleSessionSelect = (newSessionId) => {
+    // Load messages for selected session
+    setSessionId(newSessionId);
+    setSidebarOpen(false);
+    // TODO: Implement loading messages from selected session
+  };
+
+  // Auto-resize textarea
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+    
+    // Auto-resize
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+    }
   };
 
   const getAgentIcon = (agentType) => {
