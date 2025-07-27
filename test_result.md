@@ -602,10 +602,9 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "Chat System - Send Message"
-    - "Agent Suggestion System"
-  stuck_tasks: 
-    - "Chat System - Send Message"
+    - "Frontend Enhanced Message Processing"
+    - "Frontend Tools Results Display"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
