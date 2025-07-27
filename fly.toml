@@ -36,10 +36,6 @@ primary_region = "ord"
   cpu_kind = "shared"
   cpus = 1
 
-[mounts]
-  source = "vol_vw2p1d5m9p3z8x9v"
-  destination = "/data"
-
 # Environment variables (no database credentials needed for SQLite)
 # SQLite database file is created automatically  
 # Optional API keys for AI services:
