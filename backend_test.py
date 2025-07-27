@@ -848,7 +848,49 @@ class BackendTester:
             self.log_test("Emergent Tools - Python File Creation", False, f"Error: {str(e)}")
             return False
     
-    def test_emergent_tools_command_execution(self):
+    def test_emergent_tools_command_execution_date(self):
+        """Test command execution - выполни команду date (specific failing test)"""
+        try:
+            message_data = {
+                "message": "выполни команду date",
+                "agent_type": "main_assistant",
+                "model_provider": "gemini",
+                "model_name": "gemini-2.0-flash"
+            }
+            
+            response = self.session.post(f"{API_BASE}/chat/send", json=message_data)
+            if response.status_code == 200:
+                chat_response = response.json()
+                message_content = chat_response.get('message', {}).get('content', '')
+                
+                # Check if this is being routed to project creation (the bug)
+                if any(indicator in message_content.lower() for indicator in 
+                       ['проект', 'создать', 'планирование', 'архитектура']):
+                    self.log_test("Emergent Tools - Command Execution (date)", False, 
+                                f"ROUTING BUG: Command 'date' routed to project creation instead of command execution. Response: {message_content[:200]}")
+                    return False
+                
+                # Check if command was executed correctly
+                elif (any(indicator in message_content.lower() for indicator in 
+                         ['выполнена команда', 'date', '$ date', 'команда']) and
+                      any(time_indicator in message_content for time_indicator in 
+                          ['2024', '2025', 'UTC', 'GMT', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])):
+                    self.log_test("Emergent Tools - Command Execution (date)", True, 
+                                f"Command execution working - date command executed correctly", chat_response)
+                    return True
+                else:
+                    self.log_test("Emergent Tools - Command Execution (date)", False, 
+                                f"Command execution response doesn't contain expected date output: {message_content[:200]}")
+                    return False
+            else:
+                self.log_test("Emergent Tools - Command Execution (date)", False, 
+                            f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Emergent Tools - Command Execution (date)", False, f"Error: {str(e)}")
+            return False
+    
+    def test_emergent_tools_command_execution_pwd(self):
         """Test command execution - выполни команду pwd"""
         try:
             message_data = {
@@ -867,19 +909,19 @@ class BackendTester:
                 if (any(indicator in message_content.lower() for indicator in 
                        ['выполнена команда', 'pwd', '$ pwd']) and
                     ('/app' in message_content or '/home' in message_content or '/usr' in message_content)):
-                    self.log_test("Emergent Tools - Command Execution", True, 
+                    self.log_test("Emergent Tools - Command Execution (pwd)", True, 
                                 f"Command execution working - pwd command executed", chat_response)
                     return True
                 else:
-                    self.log_test("Emergent Tools - Command Execution", False, 
+                    self.log_test("Emergent Tools - Command Execution (pwd)", False, 
                                 f"Command execution response doesn't contain expected output: {message_content[:200]}")
                     return False
             else:
-                self.log_test("Emergent Tools - Command Execution", False, 
+                self.log_test("Emergent Tools - Command Execution (pwd)", False, 
                             f"HTTP {response.status_code}: {response.text}")
                 return False
         except Exception as e:
-            self.log_test("Emergent Tools - Command Execution", False, f"Error: {str(e)}")
+            self.log_test("Emergent Tools - Command Execution (pwd)", False, f"Error: {str(e)}")
             return False
     
     def test_emergent_tools_integration_playbook(self):
