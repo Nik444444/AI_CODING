@@ -10,22 +10,20 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY backend/requirements.txt .
+COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY backend/ .
+COPY . .
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
 USER app
 
-# Expose port
-EXPOSE 8000
+# Expose port (Railway uses $PORT env variable)
+EXPOSE $PORT
 
-# Health check removed - using fly.toml config
-
-# Run the application
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (Railway will set PORT automatically)
+CMD uvicorn server:app --host 0.0.0.0 --port $PORT
