@@ -158,8 +158,14 @@ class AIService:
         """Process message using appropriate tools based on content analysis"""
         message_lower = message.lower()
         
+        # Initialize tools manager context
+        tools_manager = None
+        
         try:
-            async with self.tools_manager:
+            # Create and initialize tools manager with proper async context
+            tools_manager = AgentToolsManager()
+            
+            async with tools_manager:
                 # Анализ веб-сайтов
                 if any(phrase in message_lower for phrase in ['анализ', 'сайт', 'https://', 'http://', 'веб-страниц', 'проанализируй']):
                     # Извлекаем URL из сообщения
@@ -169,16 +175,20 @@ class AIService:
                     if urls:
                         results = []
                         for url in urls[:3]:  # Ограничиваем до 3 URL
-                            crawl_result = await self.tools_manager.crawl_tool(
-                                url=url,
-                                question="Анализируй функциональность, дизайн и особенности сайта"
-                            )
-                            if crawl_result["success"]:
-                                results.append({
-                                    "url": url,
-                                    "content": crawl_result["content"][:2000],  # Ограничиваем размер
-                                    "title": crawl_result.get("title", "")
-                                })
+                            try:
+                                crawl_result = await tools_manager.crawl_tool(
+                                    url=url,
+                                    question="Анализируй функциональность, дизайн и особенности сайта"
+                                )
+                                if crawl_result["success"]:
+                                    results.append({
+                                        "url": url,
+                                        "content": crawl_result["content"][:2000],  # Ограничиваем размер
+                                        "title": crawl_result.get("title", "")
+                                    })
+                            except Exception as e:
+                                print(f"Error crawling {url}: {e}")
+                                continue
                         
                         if results:
                             analysis = f"""🌐 **Анализ веб-сайтов**
@@ -207,25 +217,29 @@ class AIService:
                     search_query = message.replace('найди', '').replace('поиск', '').replace('ищи', '').strip()
                     
                     if search_query:
-                        search_result = await self.tools_manager.web_search_tool(search_query)
-                        
-                        if search_result["success"]:
-                            response = f"""🔍 **Результаты поиска для:** "{search_query}"
+                        try:
+                            search_result = await tools_manager.web_search_tool(search_query)
+                            
+                            if search_result["success"]:
+                                response = f"""🔍 **Результаты поиска для:** "{search_query}"
 
 """
-                            for i, result in enumerate(search_result["results"][:5], 1):
-                                response += f"""**{i}. {result['title']}**
+                                for i, result in enumerate(search_result["results"][:5], 1):
+                                    response += f"""**{i}. {result['title']}**
 {result['url']}
 {result['snippet']}
 
 """
-                            
-                            return {
-                                "response": response,
-                                "agent_type": agent_type.value,
-                                "search_results": search_result["results"],
-                                "success": True
-                            }
+                                
+                                return {
+                                    "response": response,
+                                    "agent_type": agent_type.value,
+                                    "search_results": search_result["results"],
+                                    "success": True
+                                }
+                        except Exception as e:
+                            print(f"Error in web search: {e}")
+                            # Continue to fallback
                 
                 # Создание файлов
                 elif any(phrase in message_lower for phrase in ['создай файл', 'создать файл', 'напиши код', 'создай проект']):
@@ -245,24 +259,28 @@ const MyComponent = () => {
 
 export default MyComponent;"""
                         
-                        create_result = await self.tools_manager.create_file(
-                            path="frontend/src/components/MyComponent.jsx",
-                            content=file_content
-                        )
-                        
-                        if create_result["success"]:
-                            return {
-                                "response": f"""✅ **Файл создан:** `{create_result['path']}`
+                        try:
+                            create_result = await tools_manager.create_file(
+                                path="frontend/src/components/MyComponent.jsx",
+                                content=file_content
+                            )
+                            
+                            if create_result["success"]:
+                                return {
+                                    "response": f"""✅ **Файл создан:** `{create_result['path']}`
 
 ```jsx
 {file_content}
 ```
 
 Файл успешно создан в проекте!""",
-                                "agent_type": agent_type.value,
-                                "created_files": [create_result["path"]],
-                                "success": True
-                            }
+                                    "agent_type": agent_type.value,
+                                    "created_files": [create_result["path"]],
+                                    "success": True
+                                }
+                        except Exception as e:
+                            print(f"Error creating React file: {e}")
+                            # Continue to fallback
                     
                     elif 'python' in message_lower or '.py' in message_lower:
                         # Создаем Python файл
@@ -278,27 +296,31 @@ def main():
 if __name__ == "__main__":
     main()"""
                         
-                        create_result = await self.tools_manager.create_file(
-                            path="backend/example_script.py",
-                            content=file_content
-                        )
-                        
-                        if create_result["success"]:
-                            return {
-                                "response": f"""✅ **Файл создан:** `{create_result['path']}`
+                        try:
+                            create_result = await tools_manager.create_file(
+                                path="backend/example_script.py",
+                                content=file_content
+                            )
+                            
+                            if create_result["success"]:
+                                return {
+                                    "response": f"""✅ **Файл создан:** `{create_result['path']}`
 
 ```python
 {file_content}
 ```
 
 Файл успешно создан в проекте!""",
-                                "agent_type": agent_type.value,
-                                "created_files": [create_result["path"]],
-                                "success": True
-                            }
+                                    "agent_type": agent_type.value,
+                                    "created_files": [create_result["path"]],
+                                    "success": True
+                                }
+                        except Exception as e:
+                            print(f"Error creating Python file: {e}")
+                            # Continue to fallback
                 
                 # Выполнение команд
-                elif any(phrase in message_lower for phrase in ['выполни команду', 'запусти', 'установи', 'npm', 'pip', 'yarn', 'команду date', 'команду pwd', 'команду ls']):
+                elif any(phrase in message_lower for phrase in ['выполни команду', 'запусти', 'установи', 'npm', 'pip', 'yarn', 'команду date', 'команду pwd', 'команду ls', 'date', 'pwd', 'ls']):
                     # Безопасные команды для демо
                     safe_commands = ['ls', 'pwd', 'echo', 'date', 'whoami', 'node --version', 'python --version']
                     
@@ -319,11 +341,12 @@ if __name__ == "__main__":
                             command = 'ls'
                     
                     if command:
-                        exec_result = await self.tools_manager.execute_bash(command)
-                        
-                        if exec_result["success"]:
-                            return {
-                                "response": f"""💻 **Выполнена команда:** `{command}`
+                        try:
+                            exec_result = await tools_manager.execute_bash(command)
+                            
+                            if exec_result["success"]:
+                                return {
+                                    "response": f"""💻 **Выполнена команда:** `{command}`
 
 ```bash
 $ {command}
@@ -331,16 +354,27 @@ $ {command}
 ```
 
 Команда выполнена успешно!""",
-                                "agent_type": agent_type.value,
-                                "command_output": exec_result,
-                                "success": True
-                            }
-                        else:
+                                    "agent_type": agent_type.value,
+                                    "command_output": exec_result,
+                                    "success": True
+                                }
+                            else:
+                                return {
+                                    "response": f"""❌ **Ошибка выполнения команды:** `{command}`
+
+```
+{exec_result.get('stderr', exec_result.get('error', 'Unknown error'))}
+```""",
+                                    "agent_type": agent_type.value,
+                                    "success": False
+                                }
+                        except Exception as e:
+                            print(f"Error executing command {command}: {e}")
                             return {
                                 "response": f"""❌ **Ошибка выполнения команды:** `{command}`
 
 ```
-{exec_result.get('stderr', exec_result.get('error', 'Unknown error'))}
+{str(e)}
 ```""",
                                 "agent_type": agent_type.value,
                                 "success": False
@@ -360,35 +394,43 @@ $ {command}
                     
                     if file_patterns:
                         file_path = file_patterns[0]
-                        view_result = await self.tools_manager.view_file(file_path)
-                        
-                        if view_result["success"]:
-                            return {
-                                "response": f"""📄 **Содержимое файла:** `{file_path}`
+                        try:
+                            view_result = await tools_manager.view_file(file_path)
+                            
+                            if view_result["success"]:
+                                return {
+                                    "response": f"""📄 **Содержимое файла:** `{file_path}`
 
 ```
 {view_result['content'][:1000]}{'...' if len(view_result['content']) > 1000 else ''}
 ```""",
-                                "agent_type": agent_type.value,
-                                "file_content": view_result,
-                                "success": True
-                            }
+                                    "agent_type": agent_type.value,
+                                    "file_content": view_result,
+                                    "success": True
+                                }
+                        except Exception as e:
+                            print(f"Error viewing file {file_path}: {e}")
+                            # Continue to fallback
                 
                 # Генерация изображений
                 elif any(phrase in message_lower for phrase in ['создай изображение', 'генерируй картинку', 'нарисуй']):
-                    vision_result = await self.tools_manager.vision_expert_agent(message)
-                    
-                    if vision_result["success"]:
-                        return {
-                            "response": f"""🎨 **Изображение создано**
+                    try:
+                        vision_result = await tools_manager.vision_expert_agent(message)
+                        
+                        if vision_result["success"]:
+                            return {
+                                "response": f"""🎨 **Изображение создано**
 
 {vision_result['summary']}
 
 [Изображение будет отображено ниже]""",
-                            "agent_type": agent_type.value,
-                            "generated_images": vision_result.get("image_urls", []),
-                            "success": True
-                        }
+                                "agent_type": agent_type.value,
+                                "generated_images": vision_result.get("image_urls", []),
+                                "success": True
+                            }
+                    except Exception as e:
+                        print(f"Error generating image: {e}")
+                        # Continue to fallback
                 
                 # Интеграции
                 elif any(phrase in message_lower for phrase in ['интеграция', 'api', 'подключи', 'stripe', 'openai', 'gemini']):
@@ -400,23 +442,24 @@ $ {command}
                             break
                     
                     if integration_type:
-                        playbook_result = await self.tools_manager.integration_playbook_expert(
-                            integration=integration_type,
-                            constraints=""
-                        )
-                        
-                        if playbook_result["success"]:
-                            playbook = playbook_result["playbook"]
-                            response = f"""🔧 **Playbook для интеграции {integration_type.upper()}**
+                        try:
+                            playbook_result = await tools_manager.integration_playbook_expert(
+                                integration=integration_type,
+                                constraints=""
+                            )
+                            
+                            if playbook_result["success"]:
+                                playbook = playbook_result["playbook"]
+                                response = f"""🔧 **Playbook для интеграции {integration_type.upper()}**
 
 **{playbook['title']}**
 
 **Шаги интеграции:**
 """
-                            for step in playbook["steps"]:
-                                response += f"- {step}\n"
-                            
-                            response += f"""
+                                for step in playbook["steps"]:
+                                    response += f"- {step}\n"
+                                
+                                response += f"""
 **Пример кода:**
 ```python
 {playbook['code_example']}
@@ -424,17 +467,21 @@ $ {command}
 
 **Требуемые API ключи:**
 """
-                            for key in playbook["required_keys"]:
-                                response += f"- {key}\n"
-                            
-                            return {
-                                "response": response,
-                                "agent_type": agent_type.value,
-                                "integration_playbook": playbook,
-                                "success": True
-                            }
+                                for key in playbook["required_keys"]:
+                                    response += f"- {key}\n"
+                                
+                                return {
+                                    "response": response,
+                                    "agent_type": agent_type.value,
+                                    "integration_playbook": playbook,
+                                    "success": True
+                                }
+                        except Exception as e:
+                            print(f"Error generating integration playbook: {e}")
+                            # Continue to fallback
                 
                 # Если инструменты не применимы, используем стандартную обработку агентов
+                print(f"No specific tool matched for message: {message[:50]}...")
                 return await self.send_message(
                     session_id="temp",
                     message=message,
@@ -442,7 +489,9 @@ $ {command}
                 )
                 
         except Exception as e:
-            print(f"Error in process_message_with_tools: {e}")
+            print(f"Critical error in process_message_with_tools: {e}")
+            import traceback
+            traceback.print_exc()
             # Fallback to standard agent processing
             return await self.send_message(
                 session_id="temp",
