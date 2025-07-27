@@ -199,46 +199,75 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _generate_suggested_actions(message: str, agent_type: AgentType) -> List[str]:
-    """Generate contextual suggested actions"""
+def _generate_suggested_actions(message: str, agent_type: AgentType, agent_response: Dict[str, Any] = None) -> List[str]:
+    """Generate contextual suggested actions based on agent response"""
     actions = []
     message_lower = message.lower()
     
+    # If agent created files, suggest viewing them
+    if agent_response and agent_response.get("created_files"):
+        actions.append("Показать созданные файлы")
+    
+    # If there's a next agent, suggest continuing
+    if agent_response and agent_response.get("next_agent"):
+        actions.append(f"Перейти к следующему этапу ({agent_response['next_agent']})")
+    
     if agent_type == AgentType.PROJECT_PLANNER:
-        actions = [
-            "Show me the tech stack recommendations",
-            "Create a detailed development roadmap", 
-            "Help me define user requirements",
-            "Switch to Frontend Developer for UI design"
-        ]
+        actions.extend([
+            "Показать структуру проекта",
+            "Создать техническое задание", 
+            "Перейти к дизайну UI/UX",
+            "Выбрать другой tech stack"
+        ])
+    elif agent_type == AgentType.DESIGN_AGENT:
+        actions.extend([
+            "Создать дополнительные компоненты",
+            "Показать цветовую схему",
+            "Перейти к frontend разработке",
+            "Создать адаптивный дизайн"
+        ])
     elif agent_type == AgentType.FRONTEND_DEVELOPER:
-        actions = [
-            "Generate React component structure",
-            "Create responsive design mockup",
-            "Set up routing and navigation",
-            "Switch to Backend Developer for API integration"
-        ]
+        actions.extend([
+            "Добавить больше компонентов",
+            "Создать страницы приложения",
+            "Настроить роутинг",
+            "Перейти к backend разработке"
+        ])
     elif agent_type == AgentType.BACKEND_DEVELOPER:
-        actions = [
-            "Design database schema",
-            "Create API endpoints structure", 
-            "Set up authentication system",
-            "Switch to Deployment Engineer for production setup"
-        ]
+        actions.extend([
+            "Добавить аутентификацию",
+            "Создать больше API endpoints",
+            "Настроить базу данных",
+            "Перейти к интеграции"
+        ])
+    elif agent_type == AgentType.FULLSTACK_DEVELOPER:
+        actions.extend([
+            "Протестировать интеграцию",
+            "Добавить error handling",
+            "Оптимизировать производительность",
+            "Перейти к тестированию"
+        ])
+    elif agent_type == AgentType.TESTING_EXPERT:
+        actions.extend([
+            "Запустить тесты",
+            "Создать больше тест-кейсов",
+            "Проверить покрытие кода",
+            "Перейти к развертыванию"
+        ])
     elif agent_type == AgentType.DEPLOYMENT_ENGINEER:
-        actions = [
-            "Create Docker configuration",
-            "Set up CI/CD pipeline",
-            "Configure cloud deployment",
-            "Set up monitoring and logging"
-        ]
-    else:
-        actions = [
-            "Create a new project from this idea",
-            "Switch to Project Planner for detailed planning",
-            "Get started with a template",
-            "Explore similar project examples"
-        ]
+        actions.extend([
+            "Развернуть на staging",
+            "Настроить CI/CD",
+            "Создать production сборку",
+            "Мониторинг приложения"
+        ])
+    else:  # Main Assistant or others
+        actions.extend([
+            "Создать новый проект",
+            "Выбрать специализированного агента",
+            "Показать доступные возможности",
+            "Помочь с планированием"
+        ])
     
     return actions[:4]  # Limit to 4 actions
 
