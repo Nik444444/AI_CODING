@@ -134,13 +134,10 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
         db.add(user_message)
         await db.commit()
         
-        # Get AI response from real agent executor
-        ai_response_data = await ai_service.send_message(
-            session_id=session_id,
+        # Get AI response from real agent executor with tools
+        ai_response_data = await ai_service.process_message_with_tools(
             message=request.message,
-            agent_type=agent_type,
-            provider=request.model_provider,
-            model=request.model_name
+            agent_type=agent_type
         )
         
         # Extract response text
