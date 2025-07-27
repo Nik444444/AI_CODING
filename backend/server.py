@@ -177,16 +177,22 @@ async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(g
             session_id=session_id,
             role=MessageRole.ASSISTANT,
             content=ai_response,
-            agent_type=agent_type,
+            agent_type=actual_agent_type,
             timestamp=assistant_message_db.timestamp,
             suggested_actions=suggested_actions
         )
         
-        return SendMessageResponse(
+        response_data = SendMessageResponse(
             session_id=session_id,
             message=assistant_message,
             suggested_actions=suggested_actions
         )
+        
+        # Add additional metadata to response
+        if hasattr(response_data, 'metadata'):
+            response_data.metadata = message_metadata
+        
+        return response_data
         
     except Exception as e:
         logging.error(f"Error in send_message: {str(e)}")
