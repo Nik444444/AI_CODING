@@ -1,5 +1,5 @@
 # Fly.io deployment configuration for Emergent Clone Backend
-app = "ai-coding"
+app = "miniapp-wvsxfa"
 primary_region = "ord"
 
 [build]
