@@ -18,9 +18,20 @@ import {
   Palette,
   Database,
   Globe,
-  TestTube
+  TestTube,
+  Menu,
+  X,
+  Upload,
+  Paperclip,
+  Image as ImageIcon,
+  FileText,
+  Download
 } from 'lucide-react';
 import { chatAPI, agentAPI } from '../services/api';
+import MessageFormatter from './MessageFormatter';
+import TypingIndicator from './TypingIndicator';
+import ChatSidebar from './ChatSidebar';
+import FilePreview from './FilePreview';
 
 const ChatInterface = () => {
   const location = useLocation();
