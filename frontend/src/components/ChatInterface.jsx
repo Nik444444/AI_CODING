@@ -139,19 +139,36 @@ ${template.tech_stack ? template.tech_stack.map(t => `• ${t}`).join('\n') : ''
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+    if ((!inputValue.trim() && uploadedFiles.length === 0) || isLoading) return;
+
+    let messageContent = inputValue.trim();
+    
+    // Add file information to message if files are uploaded
+    if (uploadedFiles.length > 0) {
+      const fileInfo = uploadedFiles.map(file => 
+        `📎 **Файл:** ${file.name} (${file.type}, ${(file.size / 1024).toFixed(1)} KB)`
+      ).join('\n');
+      messageContent = messageContent ? `${messageContent}\n\n${fileInfo}` : fileInfo;
+    }
 
     const userMessage = {
       id: `msg-${Date.now()}`,
       role: 'user',
-      content: inputValue,
-      timestamp: new Date().toLocaleTimeString()
+      content: messageContent,
+      timestamp: new Date().toLocaleTimeString(),
+      files: uploadedFiles.length > 0 ? uploadedFiles : undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
     const messageToSend = inputValue;
     setInputValue('');
+    setUploadedFiles([]);
     setIsLoading(true);
+
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
 
     try {
       const response = await chatAPI.sendMessage(
@@ -173,7 +190,9 @@ ${template.tech_stack ? template.tech_stack.map(t => `• ${t}`).join('\n') : ''
         content: response.message.content,
         timestamp: new Date(response.message.timestamp).toLocaleTimeString(),
         agent_type: response.message.agent_type,
-        suggested_actions: response.suggested_actions || []
+        suggested_actions: response.suggested_actions || [],
+        metadata: response.message.metadata || {},
+        created_files: response.message.metadata?.created_files || []
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -190,7 +209,11 @@ ${template.tech_stack ? template.tech_stack.map(t => `• ${t}`).join('\n') : ''
       const errorMessage = {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: 'Sorry, I encountered an error processing your message. Please try again.',
+        content: `❌ **Извините, произошла ошибка при обработке вашего сообщения.**
+
+${error.message || 'Неизвестная ошибка'}
+
+Пожалуйста, попробуйте снова или обратитесь к поддержке.`,
         timestamp: new Date().toLocaleTimeString(),
         agent_type: 'main_assistant'
       };
