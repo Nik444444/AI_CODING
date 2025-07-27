@@ -18,6 +18,66 @@ class AgentType(str, Enum):
     DEPLOYMENT_ENGINEER = "deployment_engineer"
 
 
+class AgentStatus(str, Enum):
+    IDLE = "idle"
+    WORKING = "working"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    HANDOFF = "handoff"
+
+
+class TaskPriority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+class AgentTask(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    agent_type: AgentType
+    title: str
+    description: str
+    status: AgentStatus = AgentStatus.IDLE
+    priority: TaskPriority = TaskPriority.MEDIUM
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    estimated_duration: Optional[int] = None  # in minutes
+    actual_duration: Optional[int] = None  # in minutes
+    dependencies: List[str] = Field(default_factory=list)  # Task IDs that must be completed first
+    deliverables: List[str] = Field(default_factory=list)  # Expected outputs
+    handoff_to: Optional[AgentType] = None  # Next agent to receive this task
+    project_id: Optional[str] = None
+    session_id: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class AgentHandoff(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    from_agent: AgentType
+    to_agent: AgentType
+    task_id: str
+    message: str
+    context: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    status: str = "pending"  # pending, accepted, rejected
+
+
+class AgentCollaboration(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    session_id: str
+    active_agents: List[AgentType] = Field(default_factory=list)
+    agent_tasks: List[AgentTask] = Field(default_factory=list)
+    handoffs: List[AgentHandoff] = Field(default_factory=list)
+    current_phase: str = "planning"  # planning, design, development, testing, deployment
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class MessageRole(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"
