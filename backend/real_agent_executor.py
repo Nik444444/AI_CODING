@@ -898,7 +898,7 @@ def get_database():
         project_path = context.get("project_path", f"projects/project_{session_id}")
         
         # Создать интеграционные файлы
-        if any(word in message.lower() for word in ["интеграция", "api", "связать", "fullstack"]):
+        if any(word in message.lower() for word in ["интеграция", "интегрируй", "api", "связать", "fullstack", "полноценное"]):
             
             # Создать API сервис для frontend
             api_service = """import axios from 'axios';
