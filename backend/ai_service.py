@@ -425,13 +425,21 @@ $ {command}
                                 "success": True
                             }
                 
-                # Если инструменты не применимы, используем стандартную обработку
-                return await self.process_message(message, agent_type)
+                # Если инструменты не применимы, используем стандартную обработку агентов
+                return await self.send_message(
+                    session_id="temp",
+                    message=message,
+                    agent_type=agent_type
+                )
                 
         except Exception as e:
             print(f"Error in process_message_with_tools: {e}")
-            # Fallback to standard processing
-            return await self.process_message(message, agent_type)
+            # Fallback to standard agent processing
+            return await self.send_message(
+                session_id="temp",
+                message=message,
+                agent_type=agent_type
+            )
     
     async def _get_mock_response(self, message: str, agent_type: AgentType) -> str:
         """Generate mock responses for demo purposes"""
