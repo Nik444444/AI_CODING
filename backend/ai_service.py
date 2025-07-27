@@ -298,7 +298,7 @@ if __name__ == "__main__":
                             }
                 
                 # Выполнение команд
-                elif any(phrase in message_lower for phrase in ['выполни команду', 'запусти', 'установи', 'npm', 'pip', 'yarn']):
+                elif any(phrase in message_lower for phrase in ['выполни команду', 'запусти', 'установи', 'npm', 'pip', 'yarn', 'команду date', 'команду pwd', 'команду ls']):
                     # Безопасные команды для демо
                     safe_commands = ['ls', 'pwd', 'echo', 'date', 'whoami', 'node --version', 'python --version']
                     
@@ -306,8 +306,17 @@ if __name__ == "__main__":
                     command = None
                     for cmd in safe_commands:
                         if cmd in message_lower:
-                            command = cmd
+                            command = cmd  
                             break
+                    
+                    # Альтернативный способ извлечения команды
+                    if not command:
+                        if 'date' in message_lower:
+                            command = 'date'
+                        elif 'pwd' in message_lower:
+                            command = 'pwd'
+                        elif 'ls' in message_lower:
+                            command = 'ls'
                     
                     if command:
                         exec_result = await self.tools_manager.execute_bash(command)
