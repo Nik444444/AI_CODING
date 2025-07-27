@@ -430,5 +430,7 @@ agent_communication:
       message: "User reported CORS errors preventing API key saves. Updated REACT_APP_BACKEND_URL from old miniapp-wvsxfa.fly.dev to correct ai-coding-51ss.onrender.com. Backend testing confirms new URL works perfectly. Frontend needs testing to verify connection issues resolved."
     - agent: "testing"
       message: "✅ Backend verified working perfectly with new URL https://ai-coding-51ss.onrender.com. All API key endpoints functional, CORS properly configured for frontend domain. Issue is NOT with backend - suspect frontend browser cache or connection handling."
+    - agent: "main"
+      message: "🔧 FIXED! Root cause found by troubleshoot_agent: supervisor was not passing REACT_APP_BACKEND_URL environment variable to React process. Updated /etc/supervisor/conf.d/supervisord.conf to include REACT_APP_BACKEND_URL=https://ai-coding-51ss.onrender.com in frontend environment section. Frontend restarted with correct configuration."
     - agent: "testing"
       message: "🔍 CORS ERROR INVESTIGATION COMPLETED: Comprehensive testing shows backend is working perfectly with new URL (https://ai-coding-51ss.onrender.com). ✅ CORS properly configured for frontend domain (https://kodix.netlify.app) ✅ All API key CRUD operations functional ✅ Database persistence working ✅ No authentication issues ✅ All 3 providers (OpenAI, Anthropic, Gemini) supported. If users still see CORS errors, issue is likely: browser caching, frontend code using wrong URL, or network/proxy issues. Backend is NOT the problem."
