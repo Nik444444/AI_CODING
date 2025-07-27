@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App - Магазин Кроссовок</title>
+    <style>
+        /* Design System Variables */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            
+            --border-radius: 0.5rem;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .telegram-mockup {
+            max-width: 375px;
+            margin: 2rem auto;
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border-color);
+        }
+
+        .telegram-header {
+            background: var(--primary);
+            color: white;
+            padding: var(--space-md);
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .telegram-header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .telegram-body {
+            background: white;
+            min-height: 600px;
+            border-radius: 0 0 16px 16px;
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: var(--space-lg) var(--space-md);
+            text-align: center;
+        }
+
+        .app-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .app-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: var(--space-md);
+            text-align: center;
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            background: white;
+        }
+
+        .products-grid {
+            padding: var(--space-md);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #999;
+        }
+
+        .product-info {
+            padding: var(--space-sm);
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            color: #1f2937;
+        }
+
+        .product-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .product-original-price {
+            color: var(--text-muted);
+            text-decoration: line-through;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .btn {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .floating-cart {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .floating-cart:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--error);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .promo-banner {
+            background: linear-gradient(90deg, var(--warning), #fbbf24);
+            color: white;
+            padding: var(--space-sm);
+            text-align: center;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .demo-note {
+            text-align: center;
+            padding: var(--space-lg);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            background: var(--bg-tertiary);
+            margin: var(--space-xl) 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-note">
+        🎯 <strong>ПРЕВЬЮ СОЗДАННОГО ПРОЕКТА</strong><br>
+        Telegram Mini App - Магазин Кроссовок<br>
+        <em>Создано AI агентами за 16 секунд</em>
+    </div>
+
+    <div class="telegram-mockup">
+        <div class="telegram-header">
+            <div>📱</div>
+            <h1>Кроссовки Shop Bot</h1>
+        </div>
+        
+        <div class="telegram-body">
+            <div class="app-header">
+                <h2>👟 Sneakers Store</h2>
+                <p>Лучшие кроссовки по выгодным ценам!</p>
+            </div>
+            
+            <div class="promo-banner">
+                🔥 СКИДКА 30% НА ВСЕ МОДЕЛИ!
+            </div>
+            
+            <div class="nav-tabs">
+                <button class="nav-tab active">Популярные</button>
+                <button class="nav-tab">Новинки</button>
+                <button class="nav-tab">Скидки</button>
+            </div>
+            
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-image">👟</div>
+                    <div class="product-info">
+                        <div class="product-name">Nike Air Max 270</div>
+                        <div class="product-price">
+                            12,990₽
+                            <span class="product-original-price">18,500₽</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-image">👟</div>
+                    <div class="product-info">
+                        <div class="product-name">Adidas Ultraboost</div>
+                        <div class="product-price">
+                            15,690₽
+                            <span class="product-original-price">22,400₽</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-image">👟</div>
+                    <div class="product-info">
+                        <div class="product-name">Puma RS-X</div>
+                        <div class="product-price">
+                            8,990₽
+                            <span class="product-original-price">12,800₽</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-image">👟</div>
+                    <div class="product-info">
+                        <div class="product-name">New Balance 574</div>
+                        <div class="product-price">
+                            9,990₽
+                            <span class="product-original-price">14,200₽</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="floating-cart">
+        🛒
+        <div class="cart-badge">3</div>
+    </div>
+    
+    <div class="demo-note">
+        ✨ <strong>ОСОБЕННОСТИ ПРОЕКТА:</strong><br>
+        • 📋 Полное техническое задание<br>
+        • 🎨 Современная дизайн-система<br>
+        • ⚛️ React приложение с компонентами<br>
+        • 🚀 FastAPI backend с MongoDB<br>
+        • 🔗 Docker для развертывания<br>
+        • 📱 Адаптивный дизайн для Telegram<br><br>
+        <strong>17 файлов готовы к загрузке на GitHub!</strong>
+    </div>
+</body>
+</html>
