@@ -311,7 +311,7 @@ ${error.message || 'Неизвестная ошибка'}
 
   const getAgentName = (agentType) => {
     const agent = availableAgents.find(a => a.type === agentType);
-    return agent ? agent.name : 'AI Assistant';
+    return agent ? agent.name : 'AI Ассистент';
   };
 
   const getModelDisplayName = (provider, model) => {
