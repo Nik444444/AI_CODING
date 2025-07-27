@@ -6,8 +6,14 @@ from datetime import datetime
 import json
 import os
 
-# SQLite database URL
-DATABASE_URL = "sqlite+aiosqlite:///./emergent_clone.db"
+# SQLite database URL - use /data for persistent storage in production
+DATABASE_PATH = os.getenv("DATABASE_PATH", "./emergent_clone.db")
+if not DATABASE_PATH.startswith("/"):
+    # Ensure absolute path for persistent storage
+    if os.path.exists("/data"):
+        DATABASE_PATH = f"/data/{os.path.basename(DATABASE_PATH)}"
+
+DATABASE_URL = f"sqlite+aiosqlite:///{DATABASE_PATH}"
 
 # Create async engine
 engine = create_async_engine(DATABASE_URL, echo=False)
