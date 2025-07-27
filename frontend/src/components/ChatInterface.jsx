@@ -320,55 +320,107 @@ ${error.message || 'Неизвестная ошибка'}
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      {/* Header */}
-      <header className="border-b border-gray-800 p-4 flex-shrink-0">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate('/')}
-              className="text-gray-400 hover:text-white"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <Separator orientation="vertical" className="h-6" />
-            <h1 className="text-lg font-semibold">AI Development Chat</h1>
-          </div>
+    <div className="min-h-screen bg-gray-950 text-white flex">
+      {/* Sidebar */}
+      <ChatSidebar 
+        currentSessionId={sessionId}
+        onSessionSelect={handleSessionSelect}
+        onNewChat={handleNewChat}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
 
-          <div className="flex items-center space-x-4">
-            <Select value={`${selectedProvider}/${selectedModel}`} onValueChange={handleModelChange}>
-              <SelectTrigger className="w-48 bg-gray-900 border-gray-700">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
-                {availableModels.map((model) => (
-                  <SelectItem 
-                    key={`${model.provider}/${model.name}`} 
-                    value={`${model.provider}/${model.name}`}
-                    className="text-white"
-                  >
-                    <div className="flex items-center">
-                      {model.provider === 'gemini' && <Sparkles className="w-4 h-4 mr-2 text-green-400" />}
-                      {model.provider === 'openai' && <Zap className="w-4 h-4 mr-2 text-blue-400" />}
-                      {model.provider === 'anthropic' && <Brain className="w-4 h-4 mr-2 text-purple-400" />}
-                      <span>{model.display_name}</span>
-                      {model.is_free && (
-                        <Badge variant="secondary" className="ml-2 text-xs bg-green-900 text-green-300">
-                          Free
-                        </Badge>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Settings className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="border-b border-gray-800 p-4 flex-shrink-0 bg-gray-950/80 backdrop-blur supports-[backdrop-filter]:bg-gray-950/60">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="text-gray-400 hover:text-white lg:hidden"
+              >
+                <Menu className="w-4 h-4" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/')}
+                className="text-gray-400 hover:text-white hidden lg:flex"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                На главную
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="text-gray-400 hover:text-white hidden lg:flex"
+              >
+                <Menu className="w-4 h-4 mr-2" />
+                Чаты
+              </Button>
+              
+              <Separator orientation="vertical" className="h-6" />
+              
+              <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                AI Ассистент
+              </h1>
+              
+              {selectedAgent && (
+                <>
+                  <Separator orientation="vertical" className="h-6" />
+                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-400">
+                    {getAgentName(selectedAgent)}
+                  </Badge>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Select value={`${selectedProvider}/${selectedModel}`} onValueChange={handleModelChange}>
+                <SelectTrigger className="w-48 bg-gray-900 border-gray-700 hover:border-gray-600 transition-colors">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-gray-700">
+                  {availableModels.map((model) => (
+                    <SelectItem 
+                      key={`${model.provider}/${model.name}`} 
+                      value={`${model.provider}/${model.name}`}
+                      className="text-white hover:bg-gray-800 focus:bg-gray-800"
+                    >
+                      <div className="flex items-center">
+                        {model.provider === 'gemini' && <Sparkles className="w-4 h-4 mr-2 text-green-400" />}
+                        {model.provider === 'openai' && <Zap className="w-4 h-4 mr-2 text-blue-400" />}
+                        {model.provider === 'anthropic' && <Brain className="w-4 h-4 mr-2 text-purple-400" />}
+                        <span>{model.display_name}</span>
+                        {model.is_free && (
+                          <Badge variant="secondary" className="ml-2 text-xs bg-green-900 text-green-300">
+                            Бесплатно
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/api-keys')}
+                className="text-gray-400 hover:text-white"
+                title="Настройки API ключей"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto">
