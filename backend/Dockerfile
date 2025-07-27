@@ -25,9 +25,7 @@ USER app
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=60s --timeout=30s --start-period=30s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/api/health', timeout=10)"
+# Health check removed - using fly.toml config
 
 # Run the application
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
