@@ -383,11 +383,11 @@ backend:
 
   - task: "Emergent Tools Integration - Command Execution"
     implemented: true
-    working: false
+    working: true
     file: "backend/agent_tools.py, backend/ai_service.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
@@ -395,6 +395,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ Command execution FAILING - Request 'выполни команду date' is being routed to project creation workflow instead of command execution tool. Tool logic exists and works when called directly, but routing fails in production API. Async context manager or exception handling issue suspected."
+        - working: true
+          agent: "testing"
+          comment: "✅ FIXED! Command execution now working correctly. Tested both 'выполни команду date' and 'выполни команду pwd' - both execute properly and return expected output instead of routing to project creation. The async context manager fix in ai_service.py resolved the routing issue."
 
   - task: "Emergent Tools Integration - Image Generation"
     implemented: true
