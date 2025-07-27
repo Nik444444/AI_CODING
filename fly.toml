@@ -37,7 +37,7 @@ primary_region = "ord"
   cpus = 1
 
 [mounts]
-  source = "vol_v8856lg96m1kmp7v"
+  source = "vol_vw2p1d5m9p3z8x9v"
   destination = "/data"
 
 # Environment variables (no database credentials needed for SQLite)
