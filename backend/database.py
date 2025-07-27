@@ -100,7 +100,7 @@ class AgentTaskDB(Base):
     handoff_to = Column(String, nullable=True)
     project_id = Column(String, nullable=True)
     session_id = Column(String, nullable=True)
-    metadata = Column(Text, default="{}")  # JSON as text
+    task_metadata = Column(Text, default="{}")  # JSON as text
 
 
 class AgentHandoffDB(Base):
