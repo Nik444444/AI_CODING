@@ -347,6 +347,9 @@ backend:
         - working: true
           agent: "main"
           comment: "✅ Реализован полный веб-анализ с crawl_tool. Система может анализировать любые сайты, извлекать контент, заголовки и структуру. Протестировано на example.com - работает идеально."
+        - working: true
+          agent: "testing"
+          comment: "✅ Web analysis VERIFIED WORKING - Successfully analyzed https://httpbin.org/json as requested in review. System performs real website crawling, extracts content, titles, and structure. Tool routing working correctly."
 
   - task: "Emergent Tools Integration - Web Search"
     implemented: true
@@ -359,6 +362,9 @@ backend:
         - working: true
           agent: "main"
           comment: "✅ Интегрирован поиск через DuckDuckGo. Система выполняет реальный веб-поиск, обрабатывает результаты и предоставляет их пользователю. Протестировано с запросом 'React hooks' - отлично работает."
+        - working: true
+          agent: "testing"
+          comment: "✅ Web search VERIFIED WORKING - Successfully searched for 'Python tutorials' as requested in review. System performs real web search via DuckDuckGo, returns relevant results with titles, URLs, and snippets. Tool routing working correctly."
 
   - task: "Emergent Tools Integration - File Operations"
     implemented: true
@@ -371,18 +377,24 @@ backend:
         - working: true
           agent: "main"
           comment: "✅ Реализованы все файловые операции: create_file, view_file, search_replace, bulk_file_writer. Система может создавать React компоненты, Python скрипты и другие файлы в реальной файловой системе."
+        - working: true
+          agent: "testing"
+          comment: "✅ File operations VERIFIED WORKING - Successfully created React component 'ButtonExample' and Python API script as requested in review. System creates real files in filesystem with proper content. Both React (.jsx) and Python (.py) file creation working correctly."
 
   - task: "Emergent Tools Integration - Command Execution"
     implemented: true
-    working: true
+    working: false
     file: "backend/agent_tools.py, backend/ai_service.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
           comment: "✅ Интегрировано безопасное выполнение bash команд. Система может выполнять команды ls, pwd, echo, date и другие безопасные команды. Протестировано с 'ls' - работает корректно."
+        - working: false
+          agent: "testing"
+          comment: "❌ Command execution FAILING - Request 'выполни команду date' is being routed to project creation workflow instead of command execution tool. Tool logic exists and works when called directly, but routing fails in production API. Async context manager or exception handling issue suspected."
 
   - task: "Emergent Tools Integration - Image Generation"
     implemented: true
@@ -398,15 +410,18 @@ backend:
 
   - task: "Emergent Tools Integration - API Integrations"
     implemented: true
-    working: true
+    working: false
     file: "backend/agent_tools.py, backend/ai_service.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
           comment: "✅ Реализована система playbook для интеграций. Поддерживаются Stripe, OpenAI, Gemini, Anthropic с подробными инструкциями и примерами кода."
+        - working: false
+          agent: "testing"
+          comment: "❌ Integration playbooks FAILING - Request 'интеграция с OpenAI API' is being routed to project creation workflow instead of integration playbook tool. Tool logic exists and works when called directly (generates proper OpenAI playbook with steps, code examples, API keys), but routing fails in production API. Same issue as command execution."
     implemented: true
     working: true
     file: "backend/ai_service.py, backend/server.py"
