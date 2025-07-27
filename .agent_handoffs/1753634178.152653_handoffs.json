@@ -10,5 +10,21 @@
       "tech_spec_file": "projects/project_1753634178.152653/tech_spec.md"
     },
     "message": "Планирование завершено. Передаю проект для создания UI/UX дизайна."
+  },
+  {
+    "from_agent": "design_agent",
+    "to_agent": "frontend_developer",
+    "session_id": "1753634178.152653",
+    "timestamp": "2025-07-27T16:36:42.051357",
+    "context": {
+      "project_path": "projects/project_1753634178.152653",
+      "design_files": [
+        "projects/project_1753634178.152653/design_concept.md",
+        "projects/project_1753634178.152653/frontend/src/styles/design-system.css",
+        "projects/project_1753634178.152653/frontend/src/components/Button/Button.jsx"
+      ],
+      "design_concept": "projects/project_1753634178.152653/design_concept.md"
+    },
+    "message": "Дизайн готов. Передаю frontend-разработчику для реализации в React."
   }
 ]
