@@ -814,11 +814,11 @@ class BackendTester:
             self.log_test("Emergent Tools - Web Analysis (httpbin)", False, f"Error: {str(e)}")
             return False
     
-    def test_emergent_tools_file_creation_react(self):
-        """Test React file creation - создай файл React компонента"""
+    def test_emergent_tools_file_creation_button_example(self):
+        """Test React file creation - создай React компонент ButtonExample (specific test from review)"""
         try:
             message_data = {
-                "message": "создай файл React компонента",
+                "message": "создай React компонент ButtonExample",
                 "agent_type": "frontend_developer",
                 "model_provider": "gemini", 
                 "model_name": "gemini-2.0-flash"
@@ -831,28 +831,28 @@ class BackendTester:
                 
                 # Check if file was created and response contains React code
                 if (any(indicator in message_content.lower() for indicator in 
-                       ['файл создан', 'react', 'jsx', 'component']) and
+                       ['файл создан', 'react', 'jsx', 'component', 'buttonexample']) and
                     ('import React' in message_content or 'export default' in message_content)):
-                    self.log_test("Emergent Tools - React File Creation", True, 
-                                f"React file creation working - created component file", chat_response)
+                    self.log_test("Emergent Tools - React File Creation (ButtonExample)", True, 
+                                f"React file creation working - created ButtonExample component file", chat_response)
                     return True
                 else:
-                    self.log_test("Emergent Tools - React File Creation", False, 
+                    self.log_test("Emergent Tools - React File Creation (ButtonExample)", False, 
                                 f"React file creation response doesn't contain expected content: {message_content[:200]}")
                     return False
             else:
-                self.log_test("Emergent Tools - React File Creation", False, 
+                self.log_test("Emergent Tools - React File Creation (ButtonExample)", False, 
                             f"HTTP {response.status_code}: {response.text}")
                 return False
         except Exception as e:
-            self.log_test("Emergent Tools - React File Creation", False, f"Error: {str(e)}")
+            self.log_test("Emergent Tools - React File Creation (ButtonExample)", False, f"Error: {str(e)}")
             return False
     
-    def test_emergent_tools_file_creation_python(self):
-        """Test Python file creation - создай Python файл"""
+    def test_emergent_tools_file_creation_python_api(self):
+        """Test Python file creation - создай Python API script (specific test from review)"""
         try:
             message_data = {
-                "message": "создай Python файл",
+                "message": "создай Python API script",
                 "agent_type": "backend_developer",
                 "model_provider": "gemini",
                 "model_name": "gemini-2.0-flash"
@@ -865,21 +865,21 @@ class BackendTester:
                 
                 # Check if Python file was created
                 if (any(indicator in message_content.lower() for indicator in 
-                       ['файл создан', 'python', '.py']) and
-                    ('def main' in message_content or 'print(' in message_content or '__name__' in message_content)):
-                    self.log_test("Emergent Tools - Python File Creation", True, 
-                                f"Python file creation working - created script file", chat_response)
+                       ['файл создан', 'python', '.py', 'api', 'script']) and
+                    ('def main' in message_content or 'print(' in message_content or '__name__' in message_content or 'fastapi' in message_content.lower())):
+                    self.log_test("Emergent Tools - Python File Creation (API script)", True, 
+                                f"Python file creation working - created API script file", chat_response)
                     return True
                 else:
-                    self.log_test("Emergent Tools - Python File Creation", False, 
+                    self.log_test("Emergent Tools - Python File Creation (API script)", False, 
                                 f"Python file creation response doesn't contain expected content: {message_content[:200]}")
                     return False
             else:
-                self.log_test("Emergent Tools - Python File Creation", False, 
+                self.log_test("Emergent Tools - Python File Creation (API script)", False, 
                             f"HTTP {response.status_code}: {response.text}")
                 return False
         except Exception as e:
-            self.log_test("Emergent Tools - Python File Creation", False, f"Error: {str(e)}")
+            self.log_test("Emergent Tools - Python File Creation (API script)", False, f"Error: {str(e)}")
             return False
     
     def test_emergent_tools_command_execution_date(self):
