@@ -13,6 +13,11 @@ from datetime import datetime
 import aiofiles
 import aiohttp
 from pathlib import Path
+import requests
+from bs4 import BeautifulSoup
+import base64
+from PIL import Image
+import io
 
 class AgentToolsManager:
     """Менеджер инструментов для агентов - предоставляет все возможности главного AI"""
