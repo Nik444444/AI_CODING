@@ -1278,12 +1278,105 @@ volumes:
     
     # Реализация остальных агентов...
     async def _execute_main_assistant(self, message: str, session_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Main Assistant - координация и общие задачи"""
+        """Main Assistant - координация и делегирование задач к специализированным агентам"""
+        
+        response_parts = []
+        created_files = []
+        next_agent = None
+        
+        # Анализ сообщения для определения подходящего агента
+        message_lower = message.lower()
+        
+        # Определяем тип задачи и подходящего агента
+        if any(word in message_lower for word in ["создай", "создать", "разработай", "построй", "приложение", "сайт", "веб", "app", "проект"]):
+            # Задача создания проекта - передаем Project Planner
+            result = await self._execute_project_planner(message, session_id, context)
+            next_agent = "project_planner"
+            
+            response_parts.append("🧠 **Main Assistant анализирует запрос...**")
+            response_parts.append(f"Определил задачу: создание проекта")
+            response_parts.append(f"Передаю задачу Project Planner агенту для планирования и архитектуры")
+            response_parts.append("")
+            response_parts.append("=" * 50)
+            response_parts.append("🎯 **PROJECT PLANNER ПРИСТУПАЕТ К РАБОТЕ:**")
+            response_parts.append("=" * 50)
+            response_parts.append("")
+            response_parts.append(result["response"])
+            
+            created_files = result.get("created_files", [])
+            if result.get("next_agent"):
+                next_agent = result["next_agent"]
+            
+        elif any(word in message_lower for word in ["дизайн", "ui", "ux", "интерфейс", "макет", "design"]):
+            # Задача дизайна - передаем Design Agent
+            result = await self._execute_design_agent(message, session_id, context)
+            next_agent = "design_agent"
+            
+            response_parts.append("🧠 **Main Assistant определил задачу дизайна**")
+            response_parts.append("Передаю Design Agent для создания UI/UX...")
+            response_parts.append("")
+            response_parts.append(result["response"])
+            created_files = result.get("created_files", [])
+            
+        elif any(word in message_lower for word in ["frontend", "react", "компонент", "интерфейс"]):
+            # Frontend задача
+            result = await self._execute_frontend_developer(message, session_id, context)
+            next_agent = "frontend_developer"
+            
+            response_parts.append("🧠 **Main Assistant определил frontend задачу**")
+            response_parts.append("Передаю Frontend Developer...")
+            response_parts.append("")
+            response_parts.append(result["response"])
+            created_files = result.get("created_files", [])
+            
+        elif any(word in message_lower for word in ["backend", "api", "сервер", "база", "database"]):
+            # Backend задача
+            result = await self._execute_backend_developer(message, session_id, context)
+            next_agent = "backend_developer"
+            
+            response_parts.append("🧠 **Main Assistant определил backend задачу**")
+            response_parts.append("Передаю Backend Developer...")
+            response_parts.append("")
+            response_parts.append(result["response"])
+            created_files = result.get("created_files", [])
+            
+        else:
+            # Общий анализ и рекомендации
+            response_parts.append("🧠 **Main Assistant анализирует ваш запрос**")
+            response_parts.append(f"Запрос: '{message}'")
+            response_parts.append("")
+            
+            # Рекомендуем подходящего агента
+            if any(word in message_lower for word in ["план", "архитектура", "структура"]):
+                response_parts.append("📋 **Рекомендация:** Для планирования проекта используйте **Project Planner**")
+                next_agent = "project_planner"
+            elif any(word in message_lower for word in ["помощь", "help", "что", "как"]):
+                response_parts.append("💡 **Я могу помочь вам с:**")
+                response_parts.append("- 🚀 Создание полноценных приложений (передам Project Planner)")
+                response_parts.append("- 🎨 Дизайн интерфейсов (передам Design Agent)")
+                response_parts.append("- ⚛️ Frontend разработка (передам Frontend Developer)")
+                response_parts.append("- 🔧 Backend разработка (передам Backend Developer)")
+                response_parts.append("- 🔗 Fullstack интеграция (передам Fullstack Developer)")
+                response_parts.append("- 🧪 Тестирование (передам Testing Expert)")
+                response_parts.append("- 🚀 Развертывание (передам Deployment Engineer)")
+                response_parts.append("")
+                response_parts.append("**Просто опишите что хотите создать, и я передам задачу подходящему агенту!**")
+            else:
+                # Если не можем определить - передаем Project Planner как default
+                response_parts.append("🤔 **Не могу точно определить тип задачи**")
+                response_parts.append("Передаю Project Planner для анализа и планирования...")
+                response_parts.append("")
+                
+                result = await self._execute_project_planner(message, session_id, context)
+                response_parts.append(result["response"])
+                created_files = result.get("created_files", [])
+                next_agent = result.get("next_agent", "project_planner")
+        
         return {
             "success": True,
-            "response": f"Я - главный помощник. Анализирую ваш запрос: '{message}' и перенаправлю к нужному агенту.",
-            "created_files": [],
-            "next_agent": None,
+            "response": "\n\n".join(response_parts),
+            "created_files": created_files,
+            "next_agent": next_agent,
             "agent_type": "main_assistant"
         }
     
