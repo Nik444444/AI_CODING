@@ -61,7 +61,7 @@ class RealAgentExecutor:
         next_agent = None
         
         # Анализ требований и создание структуры проекта
-        if any(word in message.lower() for word in ["план", "проект", "создать", "архитектура", "требования"]):
+        if any(word in message.lower() for word in ["план", "проект", "создать", "создай", "архитектура", "требования", "приложение", "веб", "сайт"]):
             
             # Создать директорию проекта
             project_name = f"project_{session_id}"
