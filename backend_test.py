@@ -924,11 +924,11 @@ class BackendTester:
             self.log_test("Emergent Tools - Command Execution (pwd)", False, f"Error: {str(e)}")
             return False
     
-    def test_emergent_tools_integration_playbook(self):
-        """Test integration playbook - интеграция Stripe"""
+    def test_emergent_tools_integration_playbook_openai(self):
+        """Test integration playbook - интеграция с OpenAI API (specific failing test)"""
         try:
             message_data = {
-                "message": "интеграция Stripe",
+                "message": "интеграция с OpenAI API",
                 "agent_type": "main_assistant",
                 "model_provider": "gemini",
                 "model_name": "gemini-2.0-flash"
@@ -939,23 +939,30 @@ class BackendTester:
                 chat_response = response.json()
                 message_content = chat_response.get('message', {}).get('content', '')
                 
-                # Check if integration playbook was generated
-                if (any(indicator in message_content.lower() for indicator in 
-                       ['playbook', 'stripe', 'интеграция', 'шаги']) and
-                    ('pip install stripe' in message_content or 'stripe.api_key' in message_content)):
-                    self.log_test("Emergent Tools - Integration Playbook", True, 
-                                f"Integration playbook working - generated Stripe integration guide", chat_response)
+                # Check if this is being routed to project creation (the bug)
+                if any(indicator in message_content.lower() for indicator in 
+                       ['проект', 'создать', 'планирование', 'архитектура', 'tech stack']):
+                    self.log_test("Emergent Tools - Integration Playbook (OpenAI)", False, 
+                                f"ROUTING BUG: OpenAI integration request routed to project creation instead of integration playbook. Response: {message_content[:200]}")
+                    return False
+                
+                # Check if integration playbook was generated correctly
+                elif (any(indicator in message_content.lower() for indicator in 
+                         ['playbook', 'openai', 'интеграция', 'шаги']) and
+                      ('pip install openai' in message_content or 'openai' in message_content.lower())):
+                    self.log_test("Emergent Tools - Integration Playbook (OpenAI)", True, 
+                                f"Integration playbook working - generated OpenAI integration guide", chat_response)
                     return True
                 else:
-                    self.log_test("Emergent Tools - Integration Playbook", False, 
+                    self.log_test("Emergent Tools - Integration Playbook (OpenAI)", False, 
                                 f"Integration playbook response doesn't contain expected content: {message_content[:200]}")
                     return False
             else:
-                self.log_test("Emergent Tools - Integration Playbook", False, 
+                self.log_test("Emergent Tools - Integration Playbook (OpenAI)", False, 
                             f"HTTP {response.status_code}: {response.text}")
                 return False
         except Exception as e:
-            self.log_test("Emergent Tools - Integration Playbook", False, f"Error: {str(e)}")
+            self.log_test("Emergent Tools - Integration Playbook (OpenAI)", False, f"Error: {str(e)}")
             return False
     
     def test_emergent_tools_image_generation(self):
