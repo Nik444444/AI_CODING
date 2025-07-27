@@ -5,6 +5,7 @@ import Dashboard from "./components/Dashboard";
 import ChatInterface from "./components/ChatInterface";
 import ProjectView from "./components/ProjectView";
 import ApiKeysManager from "./components/ApiKeysManager";
+import AgentCollaboration from "./components/AgentCollaboration";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/chat" element={<ChatInterface />} />
           <Route path="/project/:id" element={<ProjectView />} />
           <Route path="/api-keys" element={<ApiKeysManager />} />
+          <Route path="/collaboration/:sessionId" element={<AgentCollaboration />} />
         </Routes>
       </BrowserRouter>
     </div>
