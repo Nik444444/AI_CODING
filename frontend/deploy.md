@@ -36,7 +36,7 @@ git push -u origin main
 #### 3. Environment Variables
 In Netlify dashboard → Site settings → Environment variables:
 ```
-REACT_APP_BACKEND_URL = https://emergent-clone-backend.fly.dev
+REACT_APP_BACKEND_URL = https://ai-coding.fly.dev
 GENERATE_SOURCEMAP = false
 ```
 
