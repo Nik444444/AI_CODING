@@ -10,3 +10,6 @@ python-multipart>=0.0.9
 httpx>=0.24.0
 emergentintegrations
 litellm
+aiofiles>=23.2.0
+aiohttp>=3.9.0
+glob2>=0.7
