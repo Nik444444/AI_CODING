@@ -20,7 +20,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { apiKeysAPI } from '../services/api';
-import URLDebugger from './URLDebugger';
 
 const ApiKeysManager = () => {
   const navigate = useNavigate();
