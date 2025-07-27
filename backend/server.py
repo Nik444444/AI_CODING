@@ -897,9 +897,8 @@ async def health_check():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://miniapp-wvsxfa.fly.dev",
         "https://kodix.netlify.app",
-        "https://*.netlify.app",
+        "https://*.netlify.app", 
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:3001"
