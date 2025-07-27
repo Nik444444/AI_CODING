@@ -38,13 +38,13 @@
 
 # Environment-specific redirects
 [context.production]
-  environment = { REACT_APP_BACKEND_URL = "https://miniapp-wvsxfa.fly.dev" }
+  environment = { REACT_APP_BACKEND_URL = "https://ai-coding-51ss.onrender.com" }
 
 [context.deploy-preview]
-  environment = { REACT_APP_BACKEND_URL = "https://miniapp-wvsxfa.fly.dev" }
+  environment = { REACT_APP_BACKEND_URL = "https://ai-coding-51ss.onrender.com" }
 
 [context.branch-deploy]
-  environment = { REACT_APP_BACKEND_URL = "https://miniapp-wvsxfa.fly.dev" }
+  environment = { REACT_APP_BACKEND_URL = "https://ai-coding-51ss.onrender.com" }
 
 # Development settings
 [context.development]
